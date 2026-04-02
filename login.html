@@ -75,6 +75,8 @@
               <button id="clearSessionButton" class="text-action" type="button">Clear session</button>
             </div>
 
+            <p id="providerHint" class="provider-hint">Auth mode: local browser account</p>
+
             <p id="authMessage" class="auth-message" hidden></p>
 
             <button id="submitButton" type="submit">Login</button>
@@ -87,6 +89,8 @@
         </div>
       </section>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
     <script src="./auth.js"></script>
   </body>
 </html>

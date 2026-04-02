@@ -1,17 +1,146 @@
-const USERS_KEY = "sticker-orbit-users-v1";
-const SESSION_KEY = "sticker-orbit-session-v1";
+const LOCAL_USERS_KEY = "sticker-orbit-users-v1";
+const LOCAL_SESSION_KEY = "sticker-orbit-session-v1";
 
 const authState = {
-  mode: "signin"
+  mode: "signin",
+  provider: null
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  authState.provider = createAuthProvider();
+  await authState.provider.init();
+
   if (document.querySelector("#authForm")) {
     setupAuthPage();
   }
 
-  syncSiteAuthUi();
+  await syncSiteAuthUi();
 });
+
+function createAuthProvider() {
+  const config = window.STICKER_ORBIT_SUPABASE || {};
+  const hasSupabase =
+    Boolean(window.supabase?.createClient) &&
+    typeof config.url === "string" &&
+    typeof config.anonKey === "string" &&
+    config.url.trim() &&
+    config.anonKey.trim();
+
+  return hasSupabase ? createSupabaseProvider(config) : createLocalProvider();
+}
+
+function createSupabaseProvider(config) {
+  const client = window.supabase.createClient(config.url, config.anonKey);
+
+  return {
+    kind: "supabase",
+    async init() {
+      await client.auth.getSession();
+    },
+    async getSession() {
+      const { data } = await client.auth.getSession();
+      const user = data.session?.user;
+      if (!user) return null;
+      return {
+        id: user.id,
+        displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "Orbit user",
+        email: user.email || ""
+      };
+    },
+    async signUp({ displayName, email, password }) {
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: config.redirectUrl || window.location.origin,
+          data: {
+            display_name: displayName
+          }
+        }
+      });
+      if (error) throw error;
+      const user = data.user;
+      return {
+        user: user
+          ? {
+              id: user.id,
+              displayName: user.user_metadata?.display_name || displayName,
+              email: user.email || email
+            }
+          : null,
+        needsEmailConfirmation: !data.session
+      };
+    },
+    async signIn({ email, password }) {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      const user = data.user;
+      return {
+        user: {
+          id: user.id,
+          displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "Orbit user",
+          email: user.email || email
+        }
+      };
+    },
+    async signOut() {
+      await client.auth.signOut();
+    },
+    async clearSession() {
+      await client.auth.signOut();
+    }
+  };
+}
+
+function createLocalProvider() {
+  return {
+    kind: "local",
+    async init() {},
+    async getSession() {
+      try {
+        const raw = localStorage.getItem(LOCAL_SESSION_KEY) || sessionStorage.getItem(LOCAL_SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch {
+        return null;
+      }
+    },
+    async signUp({ displayName, email, password, remember }) {
+      const users = getLocalUsers();
+      if (users.some((user) => user.email === email)) {
+        throw new Error("That email already has an account. Sign in instead.");
+      }
+
+      const user = {
+        id: makeId(),
+        displayName,
+        email,
+        passwordHash: hashPassword(password),
+        createdAt: new Date().toISOString()
+      };
+
+      users.push(user);
+      saveLocalUsers(users);
+      saveLocalSession(user, remember);
+      return { user, needsEmailConfirmation: false };
+    },
+    async signIn({ email, password, remember }) {
+      const users = getLocalUsers();
+      const user = users.find((entry) => entry.email === email);
+      if (!user || user.passwordHash !== hashPassword(password)) {
+        throw new Error("Invalid email or password.");
+      }
+
+      saveLocalSession(user, remember);
+      return { user };
+    },
+    async signOut() {
+      clearLocalSession();
+    },
+    async clearSession() {
+      clearLocalSession();
+    }
+  };
+}
 
 function setupAuthPage() {
   const els = {
@@ -26,6 +155,7 @@ function setupAuthPage() {
     switchPrompt: document.querySelector("#switchPrompt"),
     submitButton: document.querySelector("#submitButton"),
     authMessage: document.querySelector("#authMessage"),
+    providerHint: document.querySelector("#providerHint"),
     displayName: document.querySelector("#displayName"),
     email: document.querySelector("#email"),
     password: document.querySelector("#password"),
@@ -34,30 +164,32 @@ function setupAuthPage() {
     signupOnly: Array.from(document.querySelectorAll(".signup-only"))
   };
 
-  const session = getSession();
-  if (session) {
-    showMessage(els.authMessage, `Signed in as ${session.displayName}. You can go back to the studio now.`, "success");
-  }
+  els.providerHint.textContent = authState.provider.kind === "supabase"
+    ? "Auth mode: Supabase cloud account"
+    : "Auth mode: local browser account";
+
+  authState.provider.getSession().then((session) => {
+    if (session) {
+      showMessage(els.authMessage, `Signed in as ${session.displayName}. You can go back to the studio now.`, "success");
+    }
+  });
 
   els.signInTab.addEventListener("click", () => setMode("signin", els));
   els.signUpTab.addEventListener("click", () => setMode("signup", els));
-  els.switchModeButton.addEventListener("click", () => {
-    setMode(authState.mode === "signin" ? "signup" : "signin", els);
+  els.switchModeButton.addEventListener("click", () => setMode(authState.mode === "signin" ? "signup" : "signin", els));
+  els.clearSessionButton.addEventListener("click", async () => {
+    await authState.provider.clearSession();
+    showMessage(els.authMessage, "Session cleared.", "success");
+    await syncSiteAuthUi();
   });
 
-  els.clearSessionButton.addEventListener("click", () => {
-    clearSession();
-    showMessage(els.authMessage, "Session cleared for this browser.", "success");
-    syncSiteAuthUi();
-  });
-
-  els.form.addEventListener("submit", (event) => {
+  els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (authState.mode === "signup") {
-      handleSignUp(els);
+      await handleSignUp(els);
       return;
     }
-    handleSignIn(els);
+    await handleSignIn(els);
   });
 
   setMode("signin", els);
@@ -72,7 +204,7 @@ function setMode(mode, els) {
   els.cardLabel.textContent = signup ? "Create Account" : "Member Login";
   els.cardTitle.textContent = signup ? "Create your account" : "Sign in";
   els.cardCopy.textContent = signup
-    ? "Create a browser-based Sticker Orbit account to save a working session."
+    ? "Create a Sticker Orbit account so your users can sign back in later."
     : "Enter your details below to access your account.";
   els.switchPrompt.textContent = signup ? "Already have an account?" : "New here?";
   els.switchModeButton.textContent = signup ? "Sign in instead" : "Create an account";
@@ -87,7 +219,7 @@ function setMode(mode, els) {
   hideMessage(els.authMessage);
 }
 
-function handleSignUp(els) {
+async function handleSignUp(els) {
   const displayName = els.displayName.value.trim();
   const email = normalizeEmail(els.email.value);
   const password = els.password.value;
@@ -97,68 +229,66 @@ function handleSignUp(els) {
     showMessage(els.authMessage, "Display name must be at least 2 characters.", "error");
     return;
   }
-
   if (!email) {
     showMessage(els.authMessage, "Enter a valid email address.", "error");
     return;
   }
-
   if (password.length < 6) {
     showMessage(els.authMessage, "Password must be at least 6 characters.", "error");
     return;
   }
-
   if (password !== confirmPassword) {
     showMessage(els.authMessage, "Passwords do not match.", "error");
     return;
   }
 
-  const users = getUsers();
-  if (users.some((user) => user.email === email)) {
-    showMessage(els.authMessage, "That email already has an account. Sign in instead.", "error");
-    return;
+  try {
+    const result = await authState.provider.signUp({
+      displayName,
+      email,
+      password,
+      remember: els.rememberMe.checked
+    });
+
+    if (result.needsEmailConfirmation) {
+      showMessage(els.authMessage, "Account created. Check your email to confirm your account, then sign in.", "success");
+      els.form.reset();
+      return;
+    }
+
+    showMessage(els.authMessage, `Account created. Signed in as ${result.user.displayName}.`, "success");
+    els.form.reset();
+    await syncSiteAuthUi();
+    setTimeout(() => {
+      window.location.href = "./index.html";
+    }, 900);
+  } catch (error) {
+    showMessage(els.authMessage, cleanAuthError(error), "error");
   }
-
-  const user = {
-    id: makeId(),
-    displayName,
-    email,
-    passwordHash: hashPassword(password),
-    createdAt: new Date().toISOString()
-  };
-
-  users.push(user);
-  saveUsers(users);
-  saveSession(user, els.rememberMe.checked);
-  showMessage(els.authMessage, `Account created. Signed in as ${user.displayName}.`, "success");
-  els.form.reset();
-  syncSiteAuthUi();
-  setTimeout(() => {
-    window.location.href = "./index.html";
-  }, 900);
 }
 
-function handleSignIn(els) {
+async function handleSignIn(els) {
   const email = normalizeEmail(els.email.value);
   const password = els.password.value;
-  const users = getUsers();
-  const user = users.find((entry) => entry.email === email);
 
-  if (!user || user.passwordHash !== hashPassword(password)) {
-    showMessage(els.authMessage, "Invalid email or password.", "error");
-    return;
+  try {
+    const result = await authState.provider.signIn({
+      email,
+      password,
+      remember: els.rememberMe.checked
+    });
+    showMessage(els.authMessage, `Welcome back, ${result.user.displayName}.`, "success");
+    await syncSiteAuthUi();
+    setTimeout(() => {
+      window.location.href = "./index.html";
+    }, 700);
+  } catch (error) {
+    showMessage(els.authMessage, cleanAuthError(error), "error");
   }
-
-  saveSession(user, els.rememberMe.checked);
-  showMessage(els.authMessage, `Welcome back, ${user.displayName}.`, "success");
-  syncSiteAuthUi();
-  setTimeout(() => {
-    window.location.href = "./index.html";
-  }, 700);
 }
 
-function syncSiteAuthUi() {
-  const session = getSession();
+async function syncSiteAuthUi() {
+  const session = await authState.provider.getSession();
   const navActions = document.querySelector(".nav-actions");
   if (!navActions) return;
 
@@ -167,15 +297,15 @@ function syncSiteAuthUi() {
   if (session) {
     const tag = document.createElement("span");
     tag.className = "auth-badge";
-    tag.textContent = session.displayName;
+    tag.textContent = `${session.displayName}${authState.provider.kind === "supabase" ? " • cloud" : ""}`;
 
     const logout = document.createElement("button");
     logout.type = "button";
     logout.className = "btn btn-ghost btn-small";
     logout.textContent = "Logout";
-    logout.addEventListener("click", () => {
-      clearSession();
-      syncSiteAuthUi();
+    logout.addEventListener("click", async () => {
+      await authState.provider.signOut();
+      await syncSiteAuthUi();
       window.location.reload();
     });
 
@@ -191,7 +321,7 @@ function syncSiteAuthUi() {
   const login = document.createElement("a");
   login.className = "btn btn-ghost btn-small";
   login.href = "./login.html";
-  login.textContent = "Login";
+  login.textContent = authState.provider.kind === "supabase" ? "Cloud login" : "Login";
 
   const studio = document.createElement("a");
   studio.className = "btn btn-primary btn-small";
@@ -201,50 +331,48 @@ function syncSiteAuthUi() {
   navActions.append(login, studio);
 }
 
-function getUsers() {
+function getLocalUsers() {
   try {
-    const raw = localStorage.getItem(USERS_KEY);
+    const raw = localStorage.getItem(LOCAL_USERS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+function saveLocalUsers(users) {
+  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
 }
 
-function getSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveSession(user, remember) {
+function saveLocalSession(user, remember) {
   const payload = JSON.stringify({
     id: user.id,
     displayName: user.displayName,
     email: user.email
   });
-  sessionStorage.setItem(SESSION_KEY, payload);
+  sessionStorage.setItem(LOCAL_SESSION_KEY, payload);
   if (remember) {
-    localStorage.setItem(SESSION_KEY, payload);
+    localStorage.setItem(LOCAL_SESSION_KEY, payload);
   } else {
-    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LOCAL_SESSION_KEY);
   }
 }
 
-function clearSession() {
-  sessionStorage.removeItem(SESSION_KEY);
-  localStorage.removeItem(SESSION_KEY);
+function clearLocalSession() {
+  sessionStorage.removeItem(LOCAL_SESSION_KEY);
+  localStorage.removeItem(LOCAL_SESSION_KEY);
 }
 
 function normalizeEmail(value) {
   const email = String(value || "").trim().toLowerCase();
   return email.includes("@") ? email : "";
+}
+
+function cleanAuthError(error) {
+  const message = String(error?.message || "Authentication failed.");
+  if (message.includes("Email rate limit exceeded")) return "Too many email attempts. Try again shortly.";
+  if (message.includes("Invalid login credentials")) return "Invalid email or password.";
+  return message;
 }
 
 function showMessage(node, message, kind) {
