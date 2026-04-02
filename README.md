@@ -76,6 +76,12 @@ After that, sign up and sign in will use Supabase instead of browser-only storag
 
 The AI agent page is separated at `agent.html`.
 
+Without any API key:
+
+- the page runs in offline creative mode
+- it still gives sticker captions, pack ideas, and prompt-based guidance
+- no setup is required
+
 To enable safe public AI responses on Vercel:
 
 1. Deploy the project to Vercel.

@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedKey = sessionStorage.getItem(AGENT_STORAGE_KEY) || "";
   els.apiKey.value = savedKey;
   els.model.value = config.model || "gpt-5-mini";
-  setStatus(els.status, config.preferProxy ? "Ready for proxy or browser key" : "Ready");
+  setStatus(els.status, "Offline creative mode");
 
   els.quickPrompts.forEach((button) => {
     button.addEventListener("click", () => {
@@ -59,10 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
         imageDataUrl
       });
       appendMessage(els.messages, "assistant", answer);
-      setStatus(els.status, "Done");
+      setStatus(els.status, apiKey ? "Done" : "Offline creative mode");
     } catch (error) {
-      appendMessage(els.messages, "assistant", `Agent error: ${String(error.message || error)}`);
-      setStatus(els.status, "Error");
+      const fallback = buildOfflineReply({
+        prompt,
+        hasImage: Boolean(imageDataUrl)
+      });
+      appendMessage(els.messages, "assistant", fallback);
+      setStatus(els.status, "Offline creative mode");
     }
   });
 });
@@ -72,12 +76,12 @@ async function runStickerAgent({ apiEndpoint, preferProxy, apiKey, model, reason
     const proxyResult = await tryProxyRequest({ apiEndpoint, model, reasoningEffort, prompt, imageDataUrl });
     if (proxyResult.ok) return proxyResult.text;
     if (!apiKey) {
-      throw new Error(`${proxyResult.error} Add a browser API key for testing, or deploy with a server-side OPENAI_API_KEY.`);
+      return buildOfflineReply({ prompt, hasImage: Boolean(imageDataUrl) });
     }
   }
 
   if (!apiKey) {
-    throw new Error("Missing API key.");
+    return buildOfflineReply({ prompt, hasImage: Boolean(imageDataUrl) });
   }
 
   return runDirectRequest({ apiKey, model, reasoningEffort, prompt, imageDataUrl });
@@ -171,4 +175,49 @@ function maybeReadImageFile(file) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+function buildOfflineReply({ prompt, hasImage }) {
+  const topic = prompt.toLowerCase();
+  if (topic.includes("caption")) {
+    return [
+      "Offline caption set:",
+      "1. Running on vibes and poor decisions",
+      "2. Certified chaos, still adorable",
+      "3. Low battery, high drama",
+      "4. Main character on snack break",
+      "5. Too cute to stay quiet"
+    ].join("\n");
+  }
+
+  if (topic.includes("price") || topic.includes("premium") || topic.includes("pack")) {
+    return [
+      "Offline pack plan:",
+      "- Pack theme: Neon reaction pack",
+      "- Audience: streamers, Discord communities, meme-heavy chats",
+      "- 6 sticker names: Lag Panic, Clip It, Low Battery, W Key Mood, No Notes, Stream Goblin",
+      "- Suggested entry price: $3 to $5",
+      "- Upsell: creator bundle with alternate colorways and transparent PNG set"
+    ].join("\n");
+  }
+
+  if (hasImage || topic.includes("image") || topic.includes("photo")) {
+    return [
+      "Offline image direction:",
+      "- Best preset: Comic Ink for sharp faces, Dream Wash for softer portraits",
+      "- Title idea: Certified Icon",
+      "- Caption idea: Built different, exporting now",
+      "- Accent color: cyan or hot pink",
+      "- Shape: rounded for portraits, badge for reaction stickers"
+    ].join("\n");
+  }
+
+  return [
+    "Offline creative response:",
+    "- Sticker title: Absolute Mood",
+    "- Caption: Too iconic to crop",
+    "- Style preset: Neon Pulse",
+    "- Shape: Badge",
+    "- Pack idea: 8 reaction stickers built around hype, panic, sleep, and snack energy"
+  ].join("\n");
 }

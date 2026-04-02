@@ -363,6 +363,39 @@ h1 {
   margin-top: 1rem;
 }
 
+.agent-banner {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(97, 240, 214, 0.12), rgba(121, 167, 255, 0.12));
+  border: 1px solid rgba(97, 240, 214, 0.16);
+}
+
+.agent-banner strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.agent-banner p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.agent-details {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(158, 178, 221, 0.12);
+  border-radius: 20px;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.agent-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .agent-messages {
   display: grid;
   gap: 0.8rem;
