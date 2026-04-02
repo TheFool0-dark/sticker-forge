@@ -108,15 +108,31 @@ const els = {
   canvas: $("#stickerCanvas")
 };
 
+const hasCatalog = Boolean(els.typeGrid && els.typeCardTemplate);
+const hasInventory = Boolean(els.inventoryGrid && els.inventoryItemTemplate);
+const hasBuilder = Boolean(
+  els.stylePicker &&
+  els.shapePicker &&
+  els.titleInput &&
+  els.captionInput &&
+  els.bubbleInput &&
+  els.accentInput &&
+  els.outlineInput &&
+  els.rotationInput &&
+  els.canvas
+);
+const hasGallery = Boolean(els.galleryGrid && els.galleryItemTemplate);
+
 const state = loadState();
 let uploadedImage = null;
 let toastTimer = null;
-const ctx = els.canvas.getContext("2d");
+const ctx = els.canvas ? els.canvas.getContext("2d") : null;
 
-renderCatalog();
-renderControls();
+if (hasCatalog) renderCatalog();
+if (hasBuilder) renderControls();
 loadUploadedImage().then(renderAll);
 
+if (els.photoInput) {
 els.photoInput.addEventListener("change", (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -130,24 +146,28 @@ els.photoInput.addEventListener("change", (event) => {
   };
   reader.readAsDataURL(file);
 });
+}
 
+if (els.useDemoButton) {
 els.useDemoButton.addEventListener("click", async () => {
   state.photoDataUrl = "";
-  els.photoInput.value = "";
+  if (els.photoInput) els.photoInput.value = "";
   await loadUploadedImage();
   changed();
   toast("Switched back to built-in sticker art.");
 });
+}
 
-els.aiStrengthInput.addEventListener("input", () => setState("aiStrength", Number(els.aiStrengthInput.value)));
-els.glowInput.addEventListener("input", () => setState("glow", Number(els.glowInput.value)));
-els.titleInput.addEventListener("input", () => setState("title", els.titleInput.value));
-els.captionInput.addEventListener("input", () => setState("caption", els.captionInput.value));
-els.bubbleInput.addEventListener("input", () => setState("bubble", els.bubbleInput.value));
-els.accentInput.addEventListener("input", () => setState("accent", els.accentInput.value));
-els.outlineInput.addEventListener("input", () => setState("outline", Number(els.outlineInput.value)));
-els.rotationInput.addEventListener("input", () => setState("rotation", Number(els.rotationInput.value)));
+if (els.aiStrengthInput) els.aiStrengthInput.addEventListener("input", () => setState("aiStrength", Number(els.aiStrengthInput.value)));
+if (els.glowInput) els.glowInput.addEventListener("input", () => setState("glow", Number(els.glowInput.value)));
+if (els.titleInput) els.titleInput.addEventListener("input", () => setState("title", els.titleInput.value));
+if (els.captionInput) els.captionInput.addEventListener("input", () => setState("caption", els.captionInput.value));
+if (els.bubbleInput) els.bubbleInput.addEventListener("input", () => setState("bubble", els.bubbleInput.value));
+if (els.accentInput) els.accentInput.addEventListener("input", () => setState("accent", els.accentInput.value));
+if (els.outlineInput) els.outlineInput.addEventListener("input", () => setState("outline", Number(els.outlineInput.value)));
+if (els.rotationInput) els.rotationInput.addEventListener("input", () => setState("rotation", Number(els.rotationInput.value)));
 
+if (els.randomizeButton) {
 els.randomizeButton.addEventListener("click", () => {
   const current = pick(styles);
   state.selectedStyle = current.id;
@@ -165,18 +185,24 @@ els.randomizeButton.addEventListener("click", () => {
   changed();
   toast("Random sticker applied.");
 });
+}
 
+if (els.downloadButton) {
 els.downloadButton.addEventListener("click", () => {
   renderCanvas();
+  if (!els.canvas) return;
   const link = document.createElement("a");
   link.href = els.canvas.toDataURL("image/png");
   link.download = `${slug(state.title || "sticker-orbit")}.png`;
   link.click();
   toast("Sticker downloaded.");
 });
+}
 
+if (els.saveDesignButton) {
 els.saveDesignButton.addEventListener("click", () => {
   renderCanvas();
+  if (!els.canvas) return;
   state.gallery.unshift({
     id: safeRandomId(),
     title: state.title || style().label,
@@ -189,6 +215,7 @@ els.saveDesignButton.addEventListener("click", () => {
   renderGallery();
   toast("Saved to gallery.");
 });
+}
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -238,16 +265,18 @@ function changed() {
   saveState();
   renderCanvas();
   renderInventory();
+  renderGallery();
 }
 
 function renderAll() {
-  renderControls();
+  if (hasBuilder) renderControls();
   renderCanvas();
   renderInventory();
   renderGallery();
 }
 
 function renderCatalog() {
+  if (!hasCatalog) return;
   els.typeGrid.innerHTML = "";
   for (const item of stickerTypes) {
     const fragment = els.typeCardTemplate.content.cloneNode(true);
@@ -266,6 +295,7 @@ function renderCatalog() {
 }
 
 function renderControls() {
+  if (!hasBuilder) return;
   els.aiPresetPicker.innerHTML = "";
   for (const item of aiPresets) {
     const button = chip(item.label, item.id === state.aiPreset, () => {
@@ -311,6 +341,7 @@ function renderControls() {
 }
 
 function renderInventory() {
+  if (!hasInventory) return;
   els.inventoryGrid.innerHTML = "";
 
   for (const starter of starters) {
@@ -344,6 +375,9 @@ function renderInventory() {
       renderControls();
       changed();
       toast(`${starter.name} loaded into the builder.`);
+      if (!hasBuilder) {
+        window.location.href = "./studio.html";
+      }
     });
 
     els.inventoryGrid.append(fragment);
@@ -351,6 +385,7 @@ function renderInventory() {
 }
 
 function renderGallery() {
+  if (!hasGallery) return;
   els.galleryGrid.innerHTML = "";
 
   if (!state.gallery.length) {
@@ -387,6 +422,7 @@ function renderGallery() {
 }
 
 function renderCanvas() {
+  if (!ctx || !els.canvas) return;
   ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
   drawSticker(ctx, config(), els.canvas.width, els.canvas.height, uploadedImage);
 }

@@ -2,12 +2,15 @@
 
 Static sticker website with:
 
+- multipage product flow
+- landing page, explore page, studio page, and AI agent page
 - sticker type catalog
 - built-in live sticker inventory
 - custom photo upload
 - Supabase-ready auth with local fallback
 - funny, cute, comic, retro, and neon sticker presets
 - AI-style photo sticker transforms
+- OpenAI Responses API-ready AI agent
 - real-time editable starter stickers
 - browser-based sticker rendering on canvas
 - gallery save/load
@@ -63,6 +66,21 @@ To enable real cloud accounts:
 5. Deploy again.
 
 After that, sign up and sign in will use Supabase instead of browser-only storage.
+
+## AI Agent Setup
+
+The AI agent page is separated at `agent.html`.
+
+To enable live OpenAI responses:
+
+1. Open `D:\sticker\openai-config.js`.
+2. Add your OpenAI API key and preferred model, or paste a key into the agent page at runtime.
+3. Deploy again if you want the config file values to apply publicly.
+
+Important:
+
+- A frontend-only site should not expose a permanent production API key to all visitors.
+- For public multi-user AI access, move the OpenAI call behind your own backend or serverless function.
 
 ## Notes
 

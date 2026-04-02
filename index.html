@@ -3,23 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sticker Orbit | AI Photo Stickers and Custom Sticker Builder</title>
+    <title>Sticker Orbit | AI Sticker Platform</title>
     <meta
       name="description"
-      content="Sticker Orbit is a bold sticker website with AI-style photo transformations, built-in packs, live editing, and browser-side PNG export."
+      content="Sticker Orbit is a multipage AI sticker platform with a studio, explore catalog, cloud-ready accounts, and a dedicated AI agent."
     />
-    <meta name="keywords" content="stickers, sticker maker, custom stickers, png stickers, meme stickers, cute stickers, comic stickers, sticker website" />
-    <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#0b1020" />
-    <meta property="og:title" content="Sticker Orbit | AI Photo Stickers and Custom Sticker Builder" />
-    <meta property="og:description" content="Turn photos into AI-style sticker art, remix bold preset packs, and export PNGs directly from your browser." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="./favicon.svg" />
-    <meta property="og:site_name" content="Sticker Orbit" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sticker Orbit | AI Photo Stickers and Custom Sticker Builder" />
-    <meta name="twitter:description" content="Generate AI-style photo stickers, remix built-in packs, and export PNGs from a fast browser-based builder." />
-    <meta name="twitter:image" content="./favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,7 +16,6 @@
       rel="stylesheet"
     />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./favicon.svg" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -37,336 +25,99 @@
 
     <header class="site-header">
       <div class="shell nav">
-        <a class="brand" href="#top">Sticker Orbit</a>
+        <a class="brand" href="./index.html">Sticker Orbit</a>
         <nav class="site-nav">
-          <a href="#top">Home</a>
-          <a href="#ai-lab">AI Lab</a>
-          <a href="#types">Types</a>
-          <a href="#stickers">Stickers</a>
-          <a href="#builder">Builder</a>
-          <a href="#gallery">Gallery</a>
+          <a href="./explore.html">Explore</a>
+          <a href="./studio.html">Studio</a>
+          <a href="./agent.html">AI Agent</a>
+          <a href="./login.html">Account</a>
         </nav>
         <div class="nav-actions">
           <a class="btn btn-ghost btn-small" href="./login.html">Login</a>
-          <a class="btn btn-primary btn-small" href="#builder">Launch studio</a>
+          <a class="btn btn-primary btn-small" href="./studio.html">Launch studio</a>
         </div>
       </div>
     </header>
 
-    <main id="top" class="shell">
-      <section class="hero">
+    <main class="shell">
+      <section class="hero hero-home">
         <div class="hero-copy">
-          <p class="eyebrow">AI photo sticker studio</p>
-          <h1>Turn any face photo into loud, glossy sticker art in seconds.</h1>
+          <p class="eyebrow">Multipage sticker platform</p>
+          <h1>Make stickers, browse packs, and run an AI agent without cramming it into one page.</h1>
           <p class="lede">
-            Sticker Orbit mixes bold ready-made packs with an AI-style photo
-            lab. Upload a face, push it through comic, neon, dreamy, or glitch
-            transformations, then export a sticker-ready PNG without leaving the
-            browser.
+            Sticker Orbit now splits the product into focused screens: a landing page,
+            a builder studio, an explore catalog, and a dedicated AI agent workspace.
           </p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#ai-lab">Try AI photo mode</a>
-            <a class="btn btn-ghost" href="#builder">Open sticker studio</a>
+            <a class="btn btn-primary" href="./studio.html">Open studio</a>
+            <a class="btn btn-ghost" href="./agent.html">Talk to AI agent</a>
           </div>
           <div class="hero-badges">
-            <span>AI-style photo transforms</span>
-            <span>Built-in sticker packs</span>
-            <span>Photo upload</span>
-            <span>Live preview canvas</span>
-            <span>PNG download</span>
-            <span>No backend required</span>
-          </div>
-          <div class="hero-stats">
-            <article>
-              <strong>6</strong>
-              <span>AI looks</span>
-            </article>
-            <article>
-              <strong>12+</strong>
-              <span>starter stickers</span>
-            </article>
-            <article>
-              <strong>1 tap</strong>
-              <span>export to PNG</span>
-            </article>
+            <span>Cleaner navigation</span>
+            <span>Dedicated AI agent page</span>
+            <span>Photo sticker studio</span>
+            <span>Explore catalog</span>
           </div>
         </div>
 
         <article class="hero-card">
           <div class="hero-card-head">
-            <p class="panel-kicker">Orbit engines</p>
-            <h2>Photo styles built to feel like instant sticker drops</h2>
+            <p class="panel-kicker">Launch zones</p>
+            <h2>Each task now has its own page</h2>
           </div>
-          <div class="style-snapshot">
-            <div class="snapshot snapshot-meme">Comic Ink</div>
-            <div class="snapshot snapshot-kawaii">Kawaii Cloud</div>
-            <div class="snapshot snapshot-comic">Neon Pulse</div>
-            <div class="snapshot snapshot-retro">Retro Print</div>
-            <div class="snapshot snapshot-ghibli">Dream Wash</div>
-            <div class="snapshot snapshot-neon">Glitch Pop</div>
+          <div class="home-grid">
+            <a class="home-link-card" href="./explore.html">
+              <strong>Explore</strong>
+              <p>Browse sticker types and ready-made packs.</p>
+            </a>
+            <a class="home-link-card" href="./studio.html">
+              <strong>Studio</strong>
+              <p>Generate photo stickers and export PNGs.</p>
+            </a>
+            <a class="home-link-card" href="./agent.html">
+              <strong>AI Agent</strong>
+              <p>Ask for ideas, captions, and sticker pack plans.</p>
+            </a>
+            <a class="home-link-card" href="./login.html">
+              <strong>Account</strong>
+              <p>Sign in and prepare for Supabase cloud auth.</p>
+            </a>
           </div>
         </article>
       </section>
 
-      <section id="ai-lab" class="section landing-strip">
-        <article class="landing-callout">
-          <p class="eyebrow">AI lab</p>
-          <h2>A photo-to-sticker workflow and storefront in one sharp static site.</h2>
-          <p class="section-copy">
-            Upload a face, pick an AI-style preset, tune strength and glow, and
-            generate sticker-ready artwork live. The whole experience stays fast
-            because the transformation happens in-browser.
-          </p>
-        </article>
-        <div class="ai-strip">
-          <article class="ai-pill">
-            <span>01</span>
-            <strong>Upload a photo</strong>
-            <p>Use a front-facing portrait for the best result.</p>
-          </article>
-          <article class="ai-pill">
-            <span>02</span>
-            <strong>Pick an AI look</strong>
-            <p>Comic, dreamy, neon, retro, or glitch transforms.</p>
-          </article>
-          <article class="ai-pill">
-            <span>03</span>
-            <strong>Export clean PNG</strong>
-            <p>Keep the sticker border, title, and dramatic finish.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="types" class="section">
+      <section class="section">
         <div class="section-head">
-          <p class="eyebrow">Sticker catalog</p>
-          <h2>All the sticker types you can offer</h2>
-          <p class="section-copy">
-            These packs are built into the site. Most defaults are free so the
-            website feels alive immediately, while premium styles can still be
-            featured alongside them.
-          </p>
-        </div>
-        <div id="typeGrid" class="type-grid"></div>
-      </section>
-
-      <section id="stickers" class="section">
-        <div class="section-head">
-          <p class="eyebrow">Live stickers</p>
-          <h2>Ready-made free and premium stickers built into the site</h2>
-          <p class="section-copy">
-            These launch with the website, render locally, and can be loaded
-            into the builder for instant editing.
-          </p>
-        </div>
-        <div id="inventoryGrid" class="inventory-grid"></div>
-      </section>
-
-      <section id="plans" class="section">
-        <div class="section-head">
-          <p class="eyebrow">Plans</p>
-          <h2>Keep the free builder open and use premium packs for flair</h2>
-          <p class="section-copy">
-            The core builder is already useful on first visit. Premium packs can
-            stay optional without breaking the experience.
-          </p>
+          <p class="eyebrow">What changed</p>
+          <h2>A cleaner product flow for real users</h2>
         </div>
         <div class="plan-grid">
           <article class="plan-card plan-card-highlight">
-            <p class="plan-kicker">Free</p>
-            <h3>Starter Pack</h3>
-            <strong class="plan-price">$0</strong>
-            <p class="type-description">Browse, generate, edit, and export default sticker packs and AI-style photo stickers.</p>
-            <ul class="plan-features">
-              <li>Most built-in stickers</li>
-              <li>AI photo sticker mode</li>
-              <li>PNG export</li>
-            </ul>
+            <p class="plan-kicker">Explore</p>
+            <h3>Catalog first</h3>
+            <p class="type-description">People can browse sticker types and starter packs without being dumped into every feature at once.</p>
           </article>
           <article class="plan-card">
-            <p class="plan-kicker">Premium</p>
-            <h3>Featured Pack</h3>
-            <strong class="plan-price">Optional</strong>
-            <p class="type-description">Add premium visual packs or creator bundles without changing the core workflow.</p>
-            <ul class="plan-features">
-              <li>Featured hero designs</li>
-              <li>Special art direction</li>
-              <li>Merch-ready variants</li>
-            </ul>
+            <p class="plan-kicker">Studio</p>
+            <h3>Builder focused</h3>
+            <p class="type-description">The studio page is now the dedicated place for photo upload, AI-style transforms, and exports.</p>
+          </article>
+          <article class="plan-card">
+            <p class="plan-kicker">AI Agent</p>
+            <h3>Separate workspace</h3>
+            <p class="type-description">The AI assistant now lives on its own page instead of being mixed into the builder UI.</p>
+          </article>
+          <article class="plan-card">
+            <p class="plan-kicker">Account</p>
+            <h3>Auth ready</h3>
+            <p class="type-description">Login stays separate and is prepared for real Supabase-backed accounts once configured.</p>
           </article>
         </div>
-      </section>
-
-      <section id="builder" class="section builder-section">
-        <div class="section-head">
-          <p class="eyebrow">Sticker studio</p>
-          <h2>Generate an AI-style sticker from your photo or remix built-in characters</h2>
-          <p class="section-copy">
-            The studio runs entirely in the browser. It transforms uploaded
-            photos with stylized color grading, edge treatment, glow, poster
-            contrast, and sticker framing so the result feels closer to AI art
-            than a plain cropped image.
-          </p>
-        </div>
-
-        <div class="builder-layout">
-          <article class="panel controls-panel">
-            <div class="panel-block">
-              <p class="panel-kicker">1. Upload</p>
-              <label class="file-drop" for="photoInput">
-                <input id="photoInput" type="file" accept="image/*" />
-                <span>Choose a photo</span>
-                <small>JPG, PNG, or WEBP portrait</small>
-              </label>
-              <button id="useDemoButton" class="btn btn-ghost secondary-action" type="button">Use built-in sticker art</button>
-            </div>
-
-            <div class="panel-block">
-              <p class="panel-kicker">2. AI transform</p>
-              <div id="aiPresetPicker" class="chip-grid"></div>
-            </div>
-
-            <div class="panel-block form-grid ai-grid">
-              <label>
-                Transform strength
-                <input id="aiStrengthInput" type="range" min="20" max="100" value="72" />
-              </label>
-              <label>
-                Glow level
-                <input id="glowInput" type="range" min="0" max="100" value="28" />
-              </label>
-            </div>
-
-            <div class="panel-block">
-              <p class="panel-kicker">3. Style pack</p>
-              <div id="stylePicker" class="chip-grid"></div>
-            </div>
-
-            <div class="panel-block">
-              <p class="panel-kicker">4. Shape</p>
-              <div id="shapePicker" class="chip-grid compact-grid"></div>
-            </div>
-
-            <div class="panel-block form-grid">
-              <label>
-                Sticker title
-                <input id="titleInput" type="text" maxlength="42" placeholder="Chaos gremlin" />
-              </label>
-              <label>
-                Bottom caption
-                <input id="captionInput" type="text" maxlength="54" placeholder="Running on snacks and bad ideas" />
-              </label>
-              <label>
-                Bubble text
-                <input id="bubbleInput" type="text" maxlength="30" placeholder="oops" />
-              </label>
-              <label>
-                Accent color
-                <input id="accentInput" type="color" value="#ff6b57" />
-              </label>
-              <label>
-                Border thickness
-                <input id="outlineInput" type="range" min="10" max="48" value="24" />
-              </label>
-              <label>
-                Tilt
-                <input id="rotationInput" type="range" min="-18" max="18" value="0" />
-              </label>
-            </div>
-
-            <div class="panel-block action-row">
-              <button id="randomizeButton" class="btn btn-ghost" type="button">Randomize orbit</button>
-              <button id="downloadButton" class="btn btn-primary" type="button">Download PNG</button>
-            </div>
-          </article>
-
-          <article class="panel preview-panel">
-            <div class="preview-head">
-              <div>
-                <p class="panel-kicker">Live preview</p>
-                <h2 id="previewName">AI sticker preview</h2>
-              </div>
-              <button id="saveDesignButton" class="btn btn-ghost" type="button">Save to gallery</button>
-            </div>
-            <div class="canvas-frame">
-              <canvas id="stickerCanvas" width="900" height="900"></canvas>
-            </div>
-            <div class="helper-band">
-              <span id="aiModeLabel">AI mode: Comic Ink</span>
-              <span id="photoStatusLabel">Using built-in orbit character</span>
-            </div>
-            <p class="helper-text">
-              Tip: upload a bright close-up portrait for the strongest AI-style
-              sticker result. The transformation happens locally in your browser.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section id="gallery" class="section">
-        <div class="section-head">
-          <p class="eyebrow">Saved designs</p>
-          <h2>Your recent Sticker Orbit gallery</h2>
-          <p class="section-copy">
-            Save variations as you experiment. Each saved sticker stays in your
-            browser until you clear it.
-          </p>
-        </div>
-        <div id="galleryGrid" class="gallery-grid"></div>
       </section>
     </main>
-
-    <template id="typeCardTemplate">
-      <article class="type-card">
-        <div class="type-card-top">
-          <span class="type-badge"></span>
-          <strong class="type-price"></strong>
-        </div>
-        <h3 class="type-title"></h3>
-        <p class="type-description"></p>
-        <ul class="type-tags"></ul>
-      </article>
-    </template>
-
-    <template id="galleryItemTemplate">
-      <article class="gallery-card">
-        <img class="gallery-image" alt="Saved sticker design" />
-        <div class="gallery-copy">
-          <strong class="gallery-title"></strong>
-          <span class="gallery-meta"></span>
-        </div>
-        <div class="gallery-actions">
-          <button class="gallery-load" type="button">Load</button>
-          <button class="gallery-delete" type="button">Delete</button>
-        </div>
-      </article>
-    </template>
-
-    <template id="inventoryItemTemplate">
-      <article class="inventory-card">
-        <div class="inventory-art">
-          <img class="inventory-image" alt="Sticker preview" />
-        </div>
-        <div class="inventory-copy">
-          <div class="inventory-head">
-            <strong class="inventory-title"></strong>
-            <span class="inventory-price"></span>
-          </div>
-          <p class="inventory-description"></p>
-          <div class="inventory-meta">
-            <span class="inventory-style"></span>
-            <span class="inventory-shape"></span>
-          </div>
-          <button class="btn btn-primary inventory-load" type="button">Edit sticker</button>
-        </div>
-      </article>
-    </template>
-
-    <div id="toast" class="toast" hidden>Action completed.</div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./supabase-config.js"></script>
     <script src="./auth.js"></script>
-    <script src="./script.js"></script>
   </body>
 </html>

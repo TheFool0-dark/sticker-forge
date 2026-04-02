@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticker Orbit | Explore Packs</title>
+    <meta name="description" content="Browse sticker types and built-in starter packs in Sticker Orbit." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="orb orb-a" aria-hidden="true"></div>
+    <div class="orb orb-b" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="shell nav">
+        <a class="brand" href="./index.html">Sticker Orbit</a>
+        <nav class="site-nav">
+          <a href="./index.html">Home</a>
+          <a href="./explore.html">Explore</a>
+          <a href="./studio.html">Studio</a>
+          <a href="./agent.html">AI Agent</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-ghost btn-small" href="./login.html">Login</a>
+          <a class="btn btn-primary btn-small" href="./studio.html">Launch studio</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="page-hero">
+        <p class="eyebrow">Explore</p>
+        <h1>Browse sticker types and ready-made orbit packs.</h1>
+        <p class="lede">Use this page to preview what users can start from before they enter the sticker studio.</p>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <p class="eyebrow">Sticker catalog</p>
+          <h2>All the sticker types you can offer</h2>
+        </div>
+        <div id="typeGrid" class="type-grid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <p class="eyebrow">Starter packs</p>
+          <h2>Built-in sticker drops</h2>
+        </div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+    </main>
+
+    <template id="typeCardTemplate">
+      <article class="type-card">
+        <div class="type-card-top">
+          <span class="type-badge"></span>
+          <strong class="type-price"></strong>
+        </div>
+        <h3 class="type-title"></h3>
+        <p class="type-description"></p>
+        <ul class="type-tags"></ul>
+      </article>
+    </template>
+
+    <template id="inventoryItemTemplate">
+      <article class="inventory-card">
+        <div class="inventory-art">
+          <img class="inventory-image" alt="Sticker preview" />
+        </div>
+        <div class="inventory-copy">
+          <div class="inventory-head">
+            <strong class="inventory-title"></strong>
+            <span class="inventory-price"></span>
+          </div>
+          <p class="inventory-description"></p>
+          <div class="inventory-meta">
+            <span class="inventory-style"></span>
+            <span class="inventory-shape"></span>
+          </div>
+          <button class="btn btn-primary inventory-load" type="button">Edit in studio</button>
+        </div>
+      </article>
+    </template>
+
+    <div id="toast" class="toast" hidden>Action completed.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

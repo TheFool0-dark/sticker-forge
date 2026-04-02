@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticker Orbit | Studio</title>
+    <meta name="description" content="Generate AI-style sticker art from photos in the Sticker Orbit studio." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="orb orb-a" aria-hidden="true"></div>
+    <div class="orb orb-b" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="shell nav">
+        <a class="brand" href="./index.html">Sticker Orbit</a>
+        <nav class="site-nav">
+          <a href="./index.html">Home</a>
+          <a href="./explore.html">Explore</a>
+          <a href="./studio.html">Studio</a>
+          <a href="./agent.html">AI Agent</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-ghost btn-small" href="./login.html">Login</a>
+          <a class="btn btn-primary btn-small" href="./agent.html">Open agent</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="page-hero">
+        <p class="eyebrow">Studio</p>
+        <h1>Generate an AI-style sticker from your photo or remix built-in characters.</h1>
+        <p class="lede">This page is only for creation. Upload, transform, preview, and export without the catalog noise.</p>
+      </section>
+
+      <section class="section builder-section">
+        <div class="builder-layout">
+          <article class="panel controls-panel">
+            <div class="panel-block">
+              <p class="panel-kicker">1. Upload</p>
+              <label class="file-drop" for="photoInput">
+                <input id="photoInput" type="file" accept="image/*" />
+                <span>Choose a photo</span>
+                <small>JPG, PNG, or WEBP portrait</small>
+              </label>
+              <button id="useDemoButton" class="btn btn-ghost secondary-action" type="button">Use built-in sticker art</button>
+            </div>
+
+            <div class="panel-block">
+              <p class="panel-kicker">2. AI transform</p>
+              <div id="aiPresetPicker" class="chip-grid"></div>
+            </div>
+
+            <div class="panel-block form-grid ai-grid">
+              <label>
+                Transform strength
+                <input id="aiStrengthInput" type="range" min="20" max="100" value="72" />
+              </label>
+              <label>
+                Glow level
+                <input id="glowInput" type="range" min="0" max="100" value="28" />
+              </label>
+            </div>
+
+            <div class="panel-block">
+              <p class="panel-kicker">3. Style pack</p>
+              <div id="stylePicker" class="chip-grid"></div>
+            </div>
+
+            <div class="panel-block">
+              <p class="panel-kicker">4. Shape</p>
+              <div id="shapePicker" class="chip-grid compact-grid"></div>
+            </div>
+
+            <div class="panel-block form-grid">
+              <label>
+                Sticker title
+                <input id="titleInput" type="text" maxlength="42" placeholder="Chaos gremlin" />
+              </label>
+              <label>
+                Bottom caption
+                <input id="captionInput" type="text" maxlength="54" placeholder="Running on snacks and bad ideas" />
+              </label>
+              <label>
+                Bubble text
+                <input id="bubbleInput" type="text" maxlength="30" placeholder="oops" />
+              </label>
+              <label>
+                Accent color
+                <input id="accentInput" type="color" value="#ff6b57" />
+              </label>
+              <label>
+                Border thickness
+                <input id="outlineInput" type="range" min="10" max="48" value="24" />
+              </label>
+              <label>
+                Tilt
+                <input id="rotationInput" type="range" min="-18" max="18" value="0" />
+              </label>
+            </div>
+
+            <div class="panel-block action-row">
+              <button id="randomizeButton" class="btn btn-ghost" type="button">Randomize orbit</button>
+              <button id="downloadButton" class="btn btn-primary" type="button">Download PNG</button>
+            </div>
+          </article>
+
+          <article class="panel preview-panel">
+            <div class="preview-head">
+              <div>
+                <p class="panel-kicker">Live preview</p>
+                <h2 id="previewName">AI sticker preview</h2>
+              </div>
+              <button id="saveDesignButton" class="btn btn-ghost" type="button">Save to gallery</button>
+            </div>
+            <div class="canvas-frame">
+              <canvas id="stickerCanvas" width="900" height="900"></canvas>
+            </div>
+            <div class="helper-band">
+              <span id="aiModeLabel">AI mode: Comic Ink</span>
+              <span id="photoStatusLabel">Using built-in orbit character</span>
+            </div>
+            <p class="helper-text">
+              Upload a portrait, choose a style, then export. Saved designs stay below on this page.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <p class="eyebrow">Saved designs</p>
+          <h2>Your recent Sticker Orbit gallery</h2>
+        </div>
+        <div id="galleryGrid" class="gallery-grid"></div>
+      </section>
+    </main>
+
+    <template id="galleryItemTemplate">
+      <article class="gallery-card">
+        <img class="gallery-image" alt="Saved sticker design" />
+        <div class="gallery-copy">
+          <strong class="gallery-title"></strong>
+          <span class="gallery-meta"></span>
+        </div>
+        <div class="gallery-actions">
+          <button class="gallery-load" type="button">Load</button>
+          <button class="gallery-delete" type="button">Delete</button>
+        </div>
+      </article>
+    </template>
+
+    <div id="toast" class="toast" hidden>Action completed.</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticker Orbit | AI Agent</title>
+    <meta name="description" content="Use the Sticker Orbit AI agent for sticker ideas, captions, pack plans, and image-aware help." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="orb orb-a" aria-hidden="true"></div>
+    <div class="orb orb-b" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="shell nav">
+        <a class="brand" href="./index.html">Sticker Orbit</a>
+        <nav class="site-nav">
+          <a href="./index.html">Home</a>
+          <a href="./explore.html">Explore</a>
+          <a href="./studio.html">Studio</a>
+          <a href="./agent.html">AI Agent</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-ghost btn-small" href="./login.html">Login</a>
+          <a class="btn btn-primary btn-small" href="./studio.html">Launch studio</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="page-hero">
+        <p class="eyebrow">AI agent</p>
+        <h1>Ask for sticker ideas, captions, pack concepts, and photo-aware creative direction.</h1>
+        <p class="lede">This page is separate from the studio so the assistant can stay focused instead of competing with the builder UI.</p>
+      </section>
+
+      <section class="agent-layout">
+        <article class="panel agent-side">
+          <div class="section-head">
+            <p class="eyebrow">Connection</p>
+            <h2>Agent setup</h2>
+          </div>
+          <label class="agent-label" for="agentApiKey">OpenAI API key</label>
+          <input id="agentApiKey" class="agent-input" type="password" placeholder="sk-..." />
+          <p class="helper-text">Leave this blank to use the value in `openai-config.js`. In a public site, do not expose a real API key in frontend code.</p>
+
+          <label class="agent-label" for="agentModel">Model</label>
+          <input id="agentModel" class="agent-input" type="text" value="gpt-5-mini" />
+
+          <label class="agent-label" for="agentPhoto">Optional photo</label>
+          <input id="agentPhoto" class="agent-input" type="file" accept="image/*" />
+
+          <div class="agent-quick-list">
+            <button class="chip quick-prompt" type="button" data-prompt="Give me 12 funny sticker caption ideas for a sleepy cat pack.">Funny pack ideas</button>
+            <button class="chip quick-prompt" type="button" data-prompt="Plan a premium sticker pack for gaming streamers with names, moods, and pricing ideas.">Premium pack plan</button>
+            <button class="chip quick-prompt" type="button" data-prompt="Analyze this image and suggest the best sticker title, caption, and style preset for the site.">Analyze uploaded photo</button>
+          </div>
+        </article>
+
+        <article class="panel agent-main">
+          <div class="preview-head">
+            <div>
+              <p class="panel-kicker">Sticker Orbit Agent</p>
+              <h2>Creative operator</h2>
+            </div>
+            <button id="clearAgentChat" class="btn btn-ghost" type="button">Clear chat</button>
+          </div>
+
+          <div id="agentMessages" class="agent-messages">
+            <article class="agent-bubble agent-bubble-assistant">
+              Ask for captions, pack ideas, launch copy, or image-aware sticker direction.
+            </article>
+          </div>
+
+          <form id="agentForm" class="agent-form">
+            <textarea id="agentPrompt" class="agent-textarea" rows="4" placeholder="Ask the agent to write sticker captions, analyze your uploaded photo, or build a sticker pack plan..."></textarea>
+            <div class="action-row">
+              <button id="sendAgentPrompt" class="btn btn-primary" type="submit">Send to agent</button>
+              <span id="agentStatus" class="helper-text">Idle</span>
+            </div>
+          </form>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./openai-config.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./agent.js"></script>
+  </body>
+</html>
