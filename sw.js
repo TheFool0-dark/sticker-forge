@@ -1,9 +1,10 @@
-const CACHE_NAME = "sticker-orbit-cache-v5";
+const CACHE_NAME = "sticker-orbit-cache-v6";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./script.js",
+  "./auth.js",
   "./manifest.json",
   "./favicon.svg",
   "./login.html",
