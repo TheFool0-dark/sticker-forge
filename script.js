@@ -1,4 +1,4 @@
-const STORAGE_KEY = "sticker-forge-state-v3";
+const STORAGE_KEY = "sticker-forge-state-v4";
 
 const stickerTypes = [
   { name: "Funny face stickers", price: "Free", badge: "Funny", description: "Reaction-first stickers with bold titles, speech bubbles, and fast visual contrast.", tags: ["meme", "reaction", "face", "free"] },
@@ -65,9 +65,6 @@ const defaultState = {
   gallery: []
 };
 
-const state = loadState();
-let uploadedImage = null;
-
 const $ = (selector) => document.querySelector(selector);
 const els = {
   typeGrid: $("#typeGrid"),
@@ -94,6 +91,9 @@ const els = {
   canvas: $("#stickerCanvas")
 };
 
+const state = loadState();
+let uploadedImage = null;
+let toastTimer = null;
 const ctx = els.canvas.getContext("2d");
 
 renderCatalog();
@@ -103,12 +103,12 @@ loadUploadedImage().then(renderAll);
 els.photoInput.addEventListener("change", (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = async () => {
     state.photoDataUrl = String(reader.result);
     await loadUploadedImage();
-    saveState();
-    renderAll();
+    changed();
     toast("Photo loaded into the live sticker preview.");
   };
   reader.readAsDataURL(file);
@@ -116,6 +116,7 @@ els.photoInput.addEventListener("change", (event) => {
 
 els.useDemoButton.addEventListener("click", async () => {
   state.photoDataUrl = "";
+  els.photoInput.value = "";
   await loadUploadedImage();
   changed();
   toast("Switched back to built-in sticker art.");
@@ -147,14 +148,20 @@ els.downloadButton.addEventListener("click", () => {
   renderCanvas();
   const link = document.createElement("a");
   link.href = els.canvas.toDataURL("image/png");
-  link.download = `${slug(state.title || "sticker-forge")}.png`;
+  link.download = `${slug(state.title || "sticker-orbit")}.png`;
   link.click();
   toast("Sticker downloaded.");
 });
 
 els.saveDesignButton.addEventListener("click", () => {
   renderCanvas();
-  state.gallery.unshift({ id: crypto.randomUUID(), title: state.title || style().label, style: style().label, image: els.canvas.toDataURL("image/png"), config: config() });
+  state.gallery.unshift({
+    id: safeRandomId(),
+    title: state.title || style().label,
+    style: style().label,
+    image: els.canvas.toDataURL("image/png"),
+    config: config()
+  });
   state.gallery = state.gallery.slice(0, 12);
   saveState();
   renderGallery();
@@ -170,11 +177,15 @@ if ("serviceWorker" in navigator) {
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(defaultState);
+    if (!raw) return clone(defaultState);
     const parsed = JSON.parse(raw);
-    return { ...structuredClone(defaultState), ...parsed, gallery: Array.isArray(parsed.gallery) ? parsed.gallery : [] };
+    return {
+      ...clone(defaultState),
+      ...parsed,
+      gallery: Array.isArray(parsed.gallery) ? parsed.gallery : []
+    };
   } catch {
-    return structuredClone(defaultState);
+    return clone(defaultState);
   }
 }
 
@@ -187,7 +198,13 @@ async function loadUploadedImage() {
     uploadedImage = null;
     return;
   }
-  uploadedImage = await image(state.photoDataUrl);
+
+  try {
+    uploadedImage = await image(state.photoDataUrl);
+  } catch {
+    uploadedImage = null;
+    state.photoDataUrl = "";
+  }
 }
 
 function setState(key, value) {
@@ -224,4 +241,544 @@ function renderCatalog() {
     }
     els.typeGrid.append(fragment);
   }
+}
+
+function renderControls() {
+  els.stylePicker.innerHTML = "";
+  for (const item of styles) {
+    const button = chip(item.label, item.id === state.selectedStyle, () => {
+      state.selectedStyle = item.id;
+      if (!state.accent) state.accent = item.bg[1];
+      renderControls();
+      changed();
+    });
+    els.stylePicker.append(button);
+  }
+
+  els.shapePicker.innerHTML = "";
+  for (const item of shapes) {
+    const button = chip(item.label, item.id === state.selectedShape, () => {
+      state.selectedShape = item.id;
+      renderControls();
+      changed();
+    });
+    els.shapePicker.append(button);
+  }
+
+  els.titleInput.value = state.title;
+  els.captionInput.value = state.caption;
+  els.bubbleInput.value = state.bubble;
+  els.accentInput.value = state.accent;
+  els.outlineInput.value = String(state.outline);
+  els.rotationInput.value = String(state.rotation);
+  els.previewName.textContent = state.title || "Sticker preview";
+}
+
+function renderInventory() {
+  els.inventoryGrid.innerHTML = "";
+
+  for (const starter of starters) {
+    const fragment = els.inventoryItemTemplate.content.cloneNode(true);
+    const root = fragment.querySelector(".inventory-card");
+    const imageEl = fragment.querySelector(".inventory-image");
+    const button = fragment.querySelector(".inventory-load");
+
+    imageEl.src = renderPreview(starter);
+    fragment.querySelector(".inventory-title").textContent = starter.name;
+    fragment.querySelector(".inventory-price").textContent = starter.price;
+    fragment.querySelector(".inventory-description").textContent = starter.description;
+    fragment.querySelector(".inventory-style").textContent = findStyle(starter.style).label;
+    fragment.querySelector(".inventory-shape").textContent = findShape(starter.shape).label;
+
+    if (
+      starter.title === state.title &&
+      starter.style === state.selectedStyle &&
+      starter.shape === state.selectedShape &&
+      starter.characterId === state.characterId &&
+      !state.photoDataUrl
+    ) {
+      root.classList.add("inventory-card-live");
+      button.disabled = true;
+      button.textContent = "Loaded";
+    }
+
+    button.addEventListener("click", async () => {
+      applyStarter(starter);
+      await loadUploadedImage();
+      renderControls();
+      changed();
+      toast(`${starter.name} loaded into the builder.`);
+    });
+
+    els.inventoryGrid.append(fragment);
+  }
+}
+
+function renderGallery() {
+  els.galleryGrid.innerHTML = "";
+
+  if (!state.gallery.length) {
+    const empty = document.createElement("article");
+    empty.className = "gallery-card";
+    empty.innerHTML = '<div class="gallery-copy"><strong class="gallery-title">No saved stickers yet</strong><span class="gallery-meta">Save a design from the builder to keep it here.</span></div>';
+    els.galleryGrid.append(empty);
+    return;
+  }
+
+  for (const item of state.gallery) {
+    const fragment = els.galleryItemTemplate.content.cloneNode(true);
+    fragment.querySelector(".gallery-image").src = item.image;
+    fragment.querySelector(".gallery-title").textContent = item.title;
+    fragment.querySelector(".gallery-meta").textContent = item.style;
+
+    fragment.querySelector(".gallery-load").addEventListener("click", async () => {
+      Object.assign(state, clone(defaultState), item.config || {});
+      await loadUploadedImage();
+      renderControls();
+      changed();
+      toast(`${item.title} loaded from your gallery.`);
+    });
+
+    fragment.querySelector(".gallery-delete").addEventListener("click", () => {
+      state.gallery = state.gallery.filter((entry) => entry.id !== item.id);
+      saveState();
+      renderGallery();
+      toast("Saved sticker removed.");
+    });
+
+    els.galleryGrid.append(fragment);
+  }
+}
+
+function renderCanvas() {
+  ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+  drawSticker(ctx, config(), els.canvas.width, els.canvas.height, uploadedImage);
+}
+
+function config() {
+  return {
+    selectedStyle: state.selectedStyle,
+    selectedShape: state.selectedShape,
+    title: state.title,
+    caption: state.caption,
+    bubble: state.bubble,
+    accent: state.accent,
+    outline: Number(state.outline),
+    rotation: Number(state.rotation),
+    photoDataUrl: state.photoDataUrl,
+    characterId: state.characterId
+  };
+}
+
+function applyStarter(starter) {
+  state.selectedStyle = starter.style;
+  state.selectedShape = starter.shape;
+  state.title = starter.title;
+  state.caption = starter.caption;
+  state.bubble = starter.bubble;
+  state.accent = starter.accent;
+  state.outline = starter.outline;
+  state.rotation = starter.rotation;
+  state.photoDataUrl = "";
+  state.characterId = starter.characterId;
+  uploadedImage = null;
+  els.photoInput.value = "";
+}
+
+function drawSticker(targetCtx, sticker, width, height, sourceImage = null) {
+  const currentStyle = findStyle(sticker.selectedStyle);
+  const character = chars[sticker.characterId] || chars.nova;
+  const outline = Math.max(10, Number(sticker.outline) || 24);
+  const radius = 110;
+  const cardX = 80;
+  const cardY = 78;
+  const cardW = width - 160;
+  const cardH = height - 156;
+
+  targetCtx.save();
+  targetCtx.translate(width / 2, height / 2);
+  targetCtx.rotate((Number(sticker.rotation) || 0) * Math.PI / 180);
+  targetCtx.translate(-width / 2, -height / 2);
+
+  const bg = targetCtx.createLinearGradient(0, 0, width, height);
+  bg.addColorStop(0, currentStyle.bg[0]);
+  bg.addColorStop(1, currentStyle.bg[1]);
+  targetCtx.fillStyle = bg;
+  targetCtx.beginPath();
+  shapePath(targetCtx, sticker.selectedShape, cardX, cardY, cardW, cardH, radius);
+  targetCtx.fill();
+
+  targetCtx.lineWidth = outline;
+  targetCtx.strokeStyle = "rgba(255,255,255,0.96)";
+  targetCtx.stroke();
+
+  drawDecor(targetCtx, currentStyle, sticker, width, height);
+
+  if (sourceImage) {
+    drawUploadedPhoto(targetCtx, currentStyle, cardX, cardY, cardW, cardH, sourceImage);
+  } else {
+    drawCharacter(targetCtx, character, sticker, width, height);
+  }
+
+  if (sticker.bubble) {
+    drawBubble(targetCtx, sticker.bubble, sticker.accent, width);
+  }
+
+  drawText(targetCtx, sticker, width, height);
+  targetCtx.restore();
+}
+
+function drawDecor(targetCtx, currentStyle, sticker, width, height) {
+  targetCtx.save();
+  targetCtx.globalAlpha = 0.22;
+  targetCtx.fillStyle = sticker.accent || currentStyle.bg[1];
+  targetCtx.strokeStyle = "rgba(255,255,255,0.55)";
+  targetCtx.lineWidth = 8;
+
+  if (currentStyle.deco === "burst") {
+    for (let i = 0; i < 10; i += 1) {
+      const angle = (Math.PI * 2 * i) / 10;
+      const x = width / 2 + Math.cos(angle) * 280;
+      const y = height / 2 + Math.sin(angle) * 280;
+      targetCtx.beginPath();
+      targetCtx.moveTo(width / 2, height / 2);
+      targetCtx.lineTo(x, y);
+      targetCtx.stroke();
+    }
+  } else if (currentStyle.deco === "hearts") {
+    for (let i = 0; i < 8; i += 1) {
+      drawHeart(targetCtx, rand(130, width - 130), rand(130, height - 130), rand(18, 34));
+    }
+  } else if (currentStyle.deco === "petals") {
+    for (let i = 0; i < 12; i += 1) {
+      targetCtx.beginPath();
+      targetCtx.ellipse(rand(120, width - 120), rand(120, height - 120), 12, 26, rand(-80, 80) * Math.PI / 180, 0, Math.PI * 2);
+      targetCtx.fill();
+    }
+  } else if (currentStyle.deco === "stars" || currentStyle.deco === "spark") {
+    for (let i = 0; i < 10; i += 1) {
+      drawStar(targetCtx, rand(130, width - 130), rand(130, height - 130), rand(10, 22), rand(5, 10));
+    }
+  } else if (currentStyle.deco === "sun" || currentStyle.deco === "laugh") {
+    for (let i = 0; i < 7; i += 1) {
+      targetCtx.beginPath();
+      targetCtx.arc(rand(130, width - 130), rand(120, height - 120), rand(12, 26), 0, Math.PI * 2);
+      targetCtx.fill();
+    }
+  }
+
+  targetCtx.restore();
+}
+
+function drawUploadedPhoto(targetCtx, currentStyle, cardX, cardY, cardW, cardH, sourceImage) {
+  const photoW = cardW * 0.52;
+  const photoH = cardH * 0.5;
+  const x = cardX + (cardW - photoW) / 2;
+  const y = cardY + 140;
+
+  targetCtx.save();
+  targetCtx.filter = currentStyle.filter;
+  targetCtx.beginPath();
+  shapePath(targetCtx, "rounded", x, y, photoW, photoH, 56);
+  targetCtx.clip();
+  targetCtx.drawImage(sourceImage, x, y, photoW, photoH);
+  targetCtx.restore();
+}
+
+function drawCharacter(targetCtx, character, sticker, width, height) {
+  const cx = width / 2;
+  const cy = height / 2 + 25;
+
+  targetCtx.save();
+  targetCtx.fillStyle = character.shirt;
+  targetCtx.beginPath();
+  targetCtx.roundRect(cx - 140, cy + 95, 280, 180, 120);
+  targetCtx.fill();
+
+  targetCtx.fillStyle = character.fill;
+  targetCtx.beginPath();
+  targetCtx.arc(cx, cy - 20, 120, 0, Math.PI * 2);
+  targetCtx.fill();
+
+  targetCtx.fillStyle = character.hair;
+  targetCtx.beginPath();
+  targetCtx.arc(cx, cy - 45, 126, Math.PI, Math.PI * 2);
+  targetCtx.lineTo(cx + 110, cy - 10);
+  targetCtx.quadraticCurveTo(cx, cy - 120, cx - 110, cy - 10);
+  targetCtx.closePath();
+  targetCtx.fill();
+
+  targetCtx.fillStyle = "#fff";
+  targetCtx.beginPath();
+  targetCtx.arc(cx - 42, cy - 20, 26, 0, Math.PI * 2);
+  targetCtx.arc(cx + 42, cy - 20, 26, 0, Math.PI * 2);
+  targetCtx.fill();
+
+  targetCtx.fillStyle = character.eye;
+  targetCtx.beginPath();
+  targetCtx.arc(cx - 42, cy - 18, 11, 0, Math.PI * 2);
+  targetCtx.arc(cx + 42, cy - 18, 11, 0, Math.PI * 2);
+  targetCtx.fill();
+
+  targetCtx.strokeStyle = character.eye;
+  targetCtx.lineWidth = 8;
+  targetCtx.beginPath();
+  targetCtx.arc(cx, cy + 18, 46, 0.15 * Math.PI, 0.85 * Math.PI);
+  targetCtx.stroke();
+
+  targetCtx.fillStyle = character.cheek;
+  targetCtx.globalAlpha = 0.8;
+  targetCtx.beginPath();
+  targetCtx.arc(cx - 72, cy + 22, 16, 0, Math.PI * 2);
+  targetCtx.arc(cx + 72, cy + 22, 16, 0, Math.PI * 2);
+  targetCtx.fill();
+  targetCtx.globalAlpha = 1;
+
+  if (character.acc === "headphones") {
+    targetCtx.strokeStyle = sticker.accent;
+    targetCtx.lineWidth = 14;
+    targetCtx.beginPath();
+    targetCtx.arc(cx, cy - 46, 120, Math.PI * 1.05, Math.PI * 1.95);
+    targetCtx.stroke();
+  } else if (character.acc === "bow") {
+    drawBow(targetCtx, cx + 58, cy - 118, sticker.accent);
+  } else if (character.acc === "leaf") {
+    targetCtx.fillStyle = sticker.accent;
+    targetCtx.beginPath();
+    targetCtx.ellipse(cx + 86, cy - 118, 20, 40, -0.45, 0, Math.PI * 2);
+    targetCtx.fill();
+  } else if (character.acc === "cloud") {
+    targetCtx.fillStyle = "rgba(255,255,255,0.88)";
+    drawCloud(targetCtx, cx + 92, cy - 124, 48);
+  } else if (character.acc === "star" || character.acc === "spark") {
+    targetCtx.fillStyle = sticker.accent;
+    drawStar(targetCtx, cx + 94, cy - 104, 22, 10);
+  } else if (character.acc === "glasses") {
+    targetCtx.strokeStyle = character.eye;
+    targetCtx.lineWidth = 7;
+    targetCtx.strokeRect(cx - 70, cy - 46, 50, 40);
+    targetCtx.strokeRect(cx + 20, cy - 46, 50, 40);
+    targetCtx.beginPath();
+    targetCtx.moveTo(cx - 20, cy - 26);
+    targetCtx.lineTo(cx + 20, cy - 26);
+    targetCtx.stroke();
+  } else if (character.acc === "cap") {
+    targetCtx.fillStyle = sticker.accent;
+    targetCtx.beginPath();
+    targetCtx.arc(cx, cy - 95, 78, Math.PI, Math.PI * 2);
+    targetCtx.fill();
+    targetCtx.fillRect(cx - 88, cy - 95, 176, 18);
+  }
+
+  targetCtx.restore();
+}
+
+function drawBubble(targetCtx, text, accent, width) {
+  targetCtx.save();
+  targetCtx.fillStyle = "rgba(255,255,255,0.92)";
+  targetCtx.strokeStyle = accent;
+  targetCtx.lineWidth = 10;
+  targetCtx.beginPath();
+  targetCtx.roundRect(width / 2 - 170, 108, 340, 102, 40);
+  targetCtx.fill();
+  targetCtx.stroke();
+
+  targetCtx.beginPath();
+  targetCtx.moveTo(width / 2 + 50, 210);
+  targetCtx.lineTo(width / 2 + 16, 246);
+  targetCtx.lineTo(width / 2 + 6, 204);
+  targetCtx.closePath();
+  targetCtx.fill();
+  targetCtx.stroke();
+
+  targetCtx.fillStyle = "#12233d";
+  targetCtx.font = "800 34px Outfit, sans-serif";
+  targetCtx.textAlign = "center";
+  targetCtx.fillText(text.toUpperCase(), width / 2, 171);
+  targetCtx.restore();
+}
+
+function drawText(targetCtx, sticker, width, height) {
+  targetCtx.save();
+  targetCtx.textAlign = "center";
+  targetCtx.fillStyle = "#10213b";
+  targetCtx.strokeStyle = "rgba(255,255,255,0.85)";
+  targetCtx.lineJoin = "round";
+
+  targetCtx.font = "800 66px Bricolage Grotesque, sans-serif";
+  targetCtx.lineWidth = 12;
+  targetCtx.strokeText(sticker.title.toUpperCase(), width / 2, height - 184);
+  targetCtx.fillText(sticker.title.toUpperCase(), width / 2, height - 184);
+
+  targetCtx.font = "700 28px Outfit, sans-serif";
+  targetCtx.lineWidth = 8;
+  targetCtx.strokeText(sticker.caption, width / 2, height - 126);
+  targetCtx.fillText(sticker.caption, width / 2, height - 126);
+  targetCtx.restore();
+}
+
+function renderPreview(starter) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 420;
+  canvas.height = 420;
+  const previewCtx = canvas.getContext("2d");
+  drawSticker(previewCtx, {
+    selectedStyle: starter.style,
+    selectedShape: starter.shape,
+    title: starter.title,
+    caption: starter.caption,
+    bubble: starter.bubble,
+    accent: starter.accent,
+    outline: starter.outline,
+    rotation: starter.rotation,
+    photoDataUrl: "",
+    characterId: starter.characterId
+  }, canvas.width, canvas.height, null);
+  return canvas.toDataURL("image/png");
+}
+
+function shapePath(targetCtx, id, x, y, width, height, radius) {
+  if (id === "circle") {
+    targetCtx.ellipse(x + width / 2, y + height / 2, width / 2, height / 2, 0, 0, Math.PI * 2);
+    return;
+  }
+
+  if (id === "badge") {
+    const inset = 52;
+    targetCtx.moveTo(x + inset, y);
+    targetCtx.lineTo(x + width - inset, y);
+    targetCtx.lineTo(x + width, y + inset);
+    targetCtx.lineTo(x + width, y + height - inset);
+    targetCtx.lineTo(x + width - inset, y + height);
+    targetCtx.lineTo(x + inset, y + height);
+    targetCtx.lineTo(x, y + height - inset);
+    targetCtx.lineTo(x, y + inset);
+    targetCtx.closePath();
+    return;
+  }
+
+  if (id === "ticket") {
+    const notch = 38;
+    targetCtx.moveTo(x + radius, y);
+    targetCtx.arcTo(x + width, y, x + width, y + height, radius);
+    targetCtx.arcTo(x + width, y + height, x, y + height, radius);
+    targetCtx.arcTo(x, y + height, x, y, radius);
+    targetCtx.arcTo(x, y, x + width, y, radius);
+    targetCtx.closePath();
+    targetCtx.moveTo(x, y + height / 2 - notch);
+    targetCtx.arc(x, y + height / 2, notch, -Math.PI / 2, Math.PI / 2, false);
+    targetCtx.moveTo(x + width, y + height / 2 - notch);
+    targetCtx.arc(x + width, y + height / 2, notch, -Math.PI / 2, Math.PI / 2, true);
+    return;
+  }
+
+  targetCtx.roundRect(x, y, width, height, radius);
+}
+
+function chip(label, active, onClick) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `chip${active ? " is-active" : ""}`;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function style() {
+  return findStyle(state.selectedStyle);
+}
+
+function findStyle(id) {
+  return styles.find((item) => item.id === id) || styles[0];
+}
+
+function findShape(id) {
+  return shapes.find((item) => item.id === id) || shapes[0];
+}
+
+function toast(message) {
+  els.toast.textContent = message;
+  els.toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    els.toast.hidden = true;
+  }, 2200);
+}
+
+function pick(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function slug(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function safeRandomId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function image(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function drawHeart(targetCtx, x, y, size) {
+  targetCtx.beginPath();
+  targetCtx.moveTo(x, y + size / 4);
+  targetCtx.bezierCurveTo(x, y, x - size, y, x - size, y + size / 2);
+  targetCtx.bezierCurveTo(x - size, y + size, x, y + size * 1.2, x, y + size * 1.5);
+  targetCtx.bezierCurveTo(x, y + size * 1.2, x + size, y + size, x + size, y + size / 2);
+  targetCtx.bezierCurveTo(x + size, y, x, y, x, y + size / 4);
+  targetCtx.fill();
+}
+
+function drawStar(targetCtx, x, y, outerRadius, innerRadius) {
+  targetCtx.beginPath();
+  for (let i = 0; i < 10; i += 1) {
+    const angle = -Math.PI / 2 + i * Math.PI / 5;
+    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+    const px = x + Math.cos(angle) * radius;
+    const py = y + Math.sin(angle) * radius;
+    if (i === 0) targetCtx.moveTo(px, py);
+    else targetCtx.lineTo(px, py);
+  }
+  targetCtx.closePath();
+  targetCtx.fill();
+}
+
+function drawBow(targetCtx, x, y, color) {
+  targetCtx.save();
+  targetCtx.fillStyle = color;
+  targetCtx.beginPath();
+  targetCtx.ellipse(x - 22, y, 28, 18, 0.5, 0, Math.PI * 2);
+  targetCtx.ellipse(x + 22, y, 28, 18, -0.5, 0, Math.PI * 2);
+  targetCtx.fill();
+  targetCtx.beginPath();
+  targetCtx.arc(x, y, 11, 0, Math.PI * 2);
+  targetCtx.fill();
+  targetCtx.restore();
+}
+
+function drawCloud(targetCtx, x, y, size) {
+  targetCtx.beginPath();
+  targetCtx.arc(x - size * 0.35, y, size * 0.22, 0, Math.PI * 2);
+  targetCtx.arc(x, y - size * 0.1, size * 0.28, 0, Math.PI * 2);
+  targetCtx.arc(x + size * 0.3, y, size * 0.2, 0, Math.PI * 2);
+  targetCtx.fill();
 }
