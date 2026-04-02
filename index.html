@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticker Forge | Funny, Cute, and Custom Photo Stickers</title>
+    <meta
+      name="description"
+      content="Sticker Forge is a deployable static sticker website with built-in sticker packs, a live custom builder, browser-side PNG export, and editable starter designs."
+    />
+    <meta name="keywords" content="stickers, sticker maker, custom stickers, png stickers, meme stickers, cute stickers, comic stickers, sticker website" />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#12233d" />
+    <meta property="og:title" content="Sticker Forge | Funny, Cute, and Custom Photo Stickers" />
+    <meta property="og:description" content="Built-in sticker packs, real-time sticker editing, photo upload, and PNG export in a static site you can deploy anywhere." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./favicon.svg" />
+    <meta property="og:site_name" content="Sticker Forge" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sticker Forge | Funny, Cute, and Custom Photo Stickers" />
+    <meta name="twitter:description" content="A static sticker website with built-in sticker inventory, live previews, and browser-side PNG download." />
+    <meta name="twitter:image" content="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="orb orb-a" aria-hidden="true"></div>
+    <div class="orb orb-b" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="shell nav">
+        <a class="brand" href="#top">Sticker Forge</a>
+        <nav class="site-nav">
+          <a href="#top">Home</a>
+          <a href="#types">Types</a>
+          <a href="#stickers">Stickers</a>
+          <a href="#plans">Plans</a>
+          <a href="#builder">Builder</a>
+          <a href="#gallery">Gallery</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-ghost btn-small" href="./login.html">Login</a>
+          <a class="btn btn-primary btn-small" href="#builder">Make a sticker</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top" class="shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Landing page for free and premium sticker packs</p>
+          <h1>Make cute, comic, meme, and Ghibli-style stickers in real time.</h1>
+          <p class="lede">
+            Sticker Forge is a static sticker storefront plus live builder. Start
+            from built-in free sticker packs, load a design instantly, then edit
+            text, shape, style, or your own uploaded photo and download a clean
+            PNG.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#stickers">Browse free stickers</a>
+            <a class="btn btn-ghost" href="#builder">Open live builder</a>
+          </div>
+          <div class="hero-badges">
+            <span>Mostly free stickers</span>
+            <span>Built-in sticker packs</span>
+            <span>Photo upload</span>
+            <span>Live builder preview</span>
+            <span>PNG download</span>
+            <span>Ghibli-style mode</span>
+          </div>
+          <div class="hero-stats">
+            <article>
+              <strong>12+</strong>
+              <span>starter stickers</span>
+            </article>
+            <article>
+              <strong>8</strong>
+              <span>free default designs</span>
+            </article>
+            <article>
+              <strong>1 click</strong>
+              <span>load into builder</span>
+            </article>
+          </div>
+        </div>
+
+        <article class="hero-card">
+          <div class="hero-card-head">
+            <p class="panel-kicker">Best sellers</p>
+            <h2>Sticker styles people actually click first</h2>
+          </div>
+          <div class="style-snapshot">
+            <div class="snapshot snapshot-meme">Meme Face</div>
+            <div class="snapshot snapshot-kawaii">Kawaii Pop</div>
+            <div class="snapshot snapshot-comic">Comic Burst</div>
+            <div class="snapshot snapshot-retro">Retro Badge</div>
+            <div class="snapshot snapshot-ghibli">Ghibli Dream</div>
+            <div class="snapshot snapshot-neon">Neon Hype</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="section landing-strip">
+        <article class="landing-callout">
+          <p class="eyebrow">Why this works</p>
+          <h2>A storefront, builder, and starter sticker pack in one deployable site.</h2>
+          <p class="section-copy">
+            You can publish this as a simple static website, let visitors browse
+            free stickers on first load, and still give them a live editor with
+            no backend.
+          </p>
+        </article>
+      </section>
+
+      <section id="types" class="section">
+        <div class="section-head">
+          <p class="eyebrow">Sticker catalog</p>
+          <h2>All the sticker types you can offer</h2>
+          <p class="section-copy">
+            These packs are built into the site. Most defaults are free so the
+            website feels alive immediately, while premium styles can still be
+            featured alongside them.
+          </p>
+        </div>
+        <div id="typeGrid" class="type-grid"></div>
+      </section>
+
+      <section id="stickers" class="section">
+        <div class="section-head">
+          <p class="eyebrow">Live stickers</p>
+          <h2>Ready-made free and premium stickers built into the site</h2>
+          <p class="section-copy">
+            These launch with the website, render locally, and can be loaded
+            into the builder for instant editing.
+          </p>
+        </div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+
+      <section id="plans" class="section">
+        <div class="section-head">
+          <p class="eyebrow">Plans</p>
+          <h2>Most stickers are free, premium packs stay optional</h2>
+          <p class="section-copy">
+            The site is configured so free designs dominate the landing
+            experience and premium stickers act as upgrades instead of blockers.
+          </p>
+        </div>
+        <div class="plan-grid">
+          <article class="plan-card plan-card-highlight">
+            <p class="plan-kicker">Free</p>
+            <h3>Starter Pack</h3>
+            <strong class="plan-price">$0</strong>
+            <p class="type-description">Browse, load, edit, and download the default sticker set.</p>
+            <ul class="plan-features">
+              <li>Most built-in stickers</li>
+              <li>Live sticker builder</li>
+              <li>PNG export</li>
+            </ul>
+          </article>
+          <article class="plan-card">
+            <p class="plan-kicker">Premium</p>
+            <h3>Featured Pack</h3>
+            <strong class="plan-price">Optional</strong>
+            <p class="type-description">Keep a few premium stickers for storefront contrast and upsell feel.</p>
+            <ul class="plan-features">
+              <li>Featured hero designs</li>
+              <li>Special art direction</li>
+              <li>Merch-ready variants</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="builder" class="section builder-section">
+        <div class="section-head">
+          <p class="eyebrow">Sticker builder</p>
+          <h2>Make a custom sticker from any photo or built-in character</h2>
+          <p class="section-copy">
+            The generator runs in the browser. It uses layered filters,
+            outlines, captions, shapes, and decorations to create sticker-ready
+            results without needing a backend, including a new Ghibli-style
+            storybook look.
+          </p>
+        </div>
+
+        <div class="builder-layout">
+          <article class="panel controls-panel">
+            <div class="panel-block">
+              <p class="panel-kicker">1. Upload</p>
+              <label class="file-drop" for="photoInput">
+                <input id="photoInput" type="file" accept="image/*" />
+                <span>Choose a photo</span>
+                <small>JPG, PNG, or WEBP</small>
+              </label>
+              <button id="useDemoButton" class="btn btn-ghost secondary-action" type="button">Use built-in sticker art</button>
+            </div>
+
+            <div class="panel-block">
+              <p class="panel-kicker">2. Style</p>
+              <div id="stylePicker" class="chip-grid"></div>
+            </div>
+
+            <div class="panel-block">
+              <p class="panel-kicker">3. Shape</p>
+              <div id="shapePicker" class="chip-grid compact-grid"></div>
+            </div>
+
+            <div class="panel-block form-grid">
+              <label>
+                Sticker title
+                <input id="titleInput" type="text" maxlength="42" placeholder="Chaos gremlin" />
+              </label>
+              <label>
+                Bottom caption
+                <input id="captionInput" type="text" maxlength="54" placeholder="Running on snacks and bad ideas" />
+              </label>
+              <label>
+                Bubble text
+                <input id="bubbleInput" type="text" maxlength="30" placeholder="oops" />
+              </label>
+              <label>
+                Accent color
+                <input id="accentInput" type="color" value="#ff6b57" />
+              </label>
+              <label>
+                Border thickness
+                <input id="outlineInput" type="range" min="10" max="48" value="24" />
+              </label>
+              <label>
+                Tilt
+                <input id="rotationInput" type="range" min="-18" max="18" value="0" />
+              </label>
+            </div>
+
+            <div class="panel-block action-row">
+              <button id="randomizeButton" class="btn btn-ghost" type="button">Random style</button>
+              <button id="downloadButton" class="btn btn-primary" type="button">Download PNG</button>
+            </div>
+          </article>
+
+          <article class="panel preview-panel">
+            <div class="preview-head">
+              <div>
+                <p class="panel-kicker">Live preview</p>
+                <h2 id="previewName">Funny sticker preview</h2>
+              </div>
+              <button id="saveDesignButton" class="btn btn-ghost" type="button">Save to gallery</button>
+            </div>
+            <div class="canvas-frame">
+              <canvas id="stickerCanvas" width="900" height="900"></canvas>
+            </div>
+            <p class="helper-text">
+              Tip: use a close-up face photo for the funniest results. The site
+              applies sticker styling locally in your browser.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="gallery" class="section">
+        <div class="section-head">
+          <p class="eyebrow">Saved designs</p>
+          <h2>Your recent sticker gallery</h2>
+          <p class="section-copy">
+            Save variations as you experiment. Each saved sticker stays in your
+            browser until you clear it.
+          </p>
+        </div>
+        <div id="galleryGrid" class="gallery-grid"></div>
+      </section>
+    </main>
+
+    <template id="typeCardTemplate">
+      <article class="type-card">
+        <div class="type-card-top">
+          <span class="type-badge"></span>
+          <strong class="type-price"></strong>
+        </div>
+        <h3 class="type-title"></h3>
+        <p class="type-description"></p>
+        <ul class="type-tags"></ul>
+      </article>
+    </template>
+
+    <template id="galleryItemTemplate">
+      <article class="gallery-card">
+        <img class="gallery-image" alt="Saved sticker design" />
+        <div class="gallery-copy">
+          <strong class="gallery-title"></strong>
+          <span class="gallery-meta"></span>
+        </div>
+        <div class="gallery-actions">
+          <button class="gallery-load" type="button">Load</button>
+          <button class="gallery-delete" type="button">Delete</button>
+        </div>
+      </article>
+    </template>
+
+    <template id="inventoryItemTemplate">
+      <article class="inventory-card">
+        <div class="inventory-art">
+          <img class="inventory-image" alt="Sticker preview" />
+        </div>
+        <div class="inventory-copy">
+          <div class="inventory-head">
+            <strong class="inventory-title"></strong>
+            <span class="inventory-price"></span>
+          </div>
+          <p class="inventory-description"></p>
+          <div class="inventory-meta">
+            <span class="inventory-style"></span>
+            <span class="inventory-shape"></span>
+          </div>
+          <button class="btn btn-primary inventory-load" type="button">Edit sticker</button>
+        </div>
+      </article>
+    </template>
+
+    <div id="toast" class="toast" hidden>Action completed.</div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

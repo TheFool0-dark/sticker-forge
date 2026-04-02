@@ -1,0 +1,18 @@
+{
+  "name": "Sticker Forge",
+  "short_name": "Sticker Forge",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff7ee",
+  "theme_color": "#12233d",
+  "description": "Built-in sticker packs and a live custom sticker builder with browser-side PNG export.",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sticker Forge | Login</title>
+    <meta
+      name="description"
+      content="Sign in to Sticker Forge to manage saved sticker projects and storefront activity."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./login.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="promo-panel">
+        <a class="back-link" href="./index.html">Back to Sticker Forge</a>
+        <p class="eyebrow">Secure Access</p>
+        <h1>Welcome back.</h1>
+        <p class="promo-copy">
+          Sign in to continue managing your sticker workspace, storefront activity,
+          and saved projects from one place.
+        </p>
+        <div class="feature-list">
+          <div>
+            <span class="feature-number">01</span>
+            <p>Fast access to saved sticker drafts and gallery items</p>
+          </div>
+          <div>
+            <span class="feature-number">02</span>
+            <p>Clean login flow that matches the main storefront visual system</p>
+          </div>
+          <div>
+            <span class="feature-number">03</span>
+            <p>Responsive layout for both mobile and desktop sessions</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-panel">
+        <form class="login-card">
+          <p class="card-label">Member Login</p>
+          <h2>Sign in</h2>
+          <p class="card-copy">Enter your details below to access your account.</p>
+
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="name@example.com" required />
+
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="Enter your password" required />
+
+          <div class="form-row">
+            <label class="checkbox">
+              <input type="checkbox" />
+              <span>Remember me</span>
+            </label>
+            <a href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit">Login</button>
+
+          <p class="signup-link">New here? <a href="#">Create an account</a></p>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
