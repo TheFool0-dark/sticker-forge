@@ -1,12 +1,12 @@
 {
-  "name": "Sticker Forge",
-  "short_name": "Sticker Forge",
+  "name": "Sticker Orbit",
+  "short_name": "Sticker Orbit",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fff7ee",
-  "theme_color": "#12233d",
-  "description": "Built-in sticker packs and a live custom sticker builder with browser-side PNG export.",
+  "background_color": "#08101f",
+  "theme_color": "#0b1020",
+  "description": "AI-style photo stickers, built-in packs, and a live browser-based sticker studio.",
   "icons": [
     {
       "src": "./favicon.svg",

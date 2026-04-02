@@ -20,6 +20,15 @@ const styles = [
   { id: "neon", label: "Neon Hype", filter: "contrast(1.4) saturate(1.34) hue-rotate(-8deg)", bg: ["#583dff", "#ff4bc2"], deco: "stars", bubble: true }
 ];
 
+const aiPresets = [
+  { id: "comic-ink", label: "Comic Ink", tint: [56, 126, 255], sat: 1.25, contrast: 1.28, posterize: 6, edge: 1.25, glow: [97, 240, 214] },
+  { id: "dream-wash", label: "Dream Wash", tint: [122, 226, 255], sat: 0.96, contrast: 1.06, posterize: 7, edge: 0.6, glow: [255, 173, 223] },
+  { id: "neon-pulse", label: "Neon Pulse", tint: [255, 74, 195], sat: 1.42, contrast: 1.3, posterize: 5, edge: 1.15, glow: [111, 246, 223] },
+  { id: "retro-print", label: "Retro Print", tint: [255, 182, 82], sat: 0.92, contrast: 1.16, posterize: 5, edge: 0.95, glow: [255, 233, 124] },
+  { id: "kawaii-cloud", label: "Kawaii Cloud", tint: [255, 186, 233], sat: 1.04, contrast: 1.04, posterize: 8, edge: 0.5, glow: [175, 255, 241] },
+  { id: "glitch-pop", label: "Glitch Pop", tint: [142, 104, 255], sat: 1.36, contrast: 1.34, posterize: 4, edge: 1.35, glow: [255, 92, 191] }
+];
+
 const shapes = [
   { id: "rounded", label: "Rounded" },
   { id: "circle", label: "Circle" },
@@ -54,6 +63,9 @@ const starters = [
 const defaultState = {
   selectedStyle: starters[0].style,
   selectedShape: starters[0].shape,
+  aiPreset: aiPresets[0].id,
+  aiStrength: 72,
+  glow: 28,
   title: starters[0].title,
   caption: starters[0].caption,
   bubble: starters[0].bubble,
@@ -69,10 +81,13 @@ const $ = (selector) => document.querySelector(selector);
 const els = {
   typeGrid: $("#typeGrid"),
   inventoryGrid: $("#inventoryGrid"),
+  aiPresetPicker: $("#aiPresetPicker"),
   stylePicker: $("#stylePicker"),
   shapePicker: $("#shapePicker"),
   photoInput: $("#photoInput"),
   useDemoButton: $("#useDemoButton"),
+  aiStrengthInput: $("#aiStrengthInput"),
+  glowInput: $("#glowInput"),
   titleInput: $("#titleInput"),
   captionInput: $("#captionInput"),
   bubbleInput: $("#bubbleInput"),
@@ -83,6 +98,8 @@ const els = {
   downloadButton: $("#downloadButton"),
   saveDesignButton: $("#saveDesignButton"),
   previewName: $("#previewName"),
+  aiModeLabel: $("#aiModeLabel"),
+  photoStatusLabel: $("#photoStatusLabel"),
   galleryGrid: $("#galleryGrid"),
   galleryItemTemplate: $("#galleryItemTemplate"),
   inventoryItemTemplate: $("#inventoryItemTemplate"),
@@ -122,6 +139,8 @@ els.useDemoButton.addEventListener("click", async () => {
   toast("Switched back to built-in sticker art.");
 });
 
+els.aiStrengthInput.addEventListener("input", () => setState("aiStrength", Number(els.aiStrengthInput.value)));
+els.glowInput.addEventListener("input", () => setState("glow", Number(els.glowInput.value)));
 els.titleInput.addEventListener("input", () => setState("title", els.titleInput.value));
 els.captionInput.addEventListener("input", () => setState("caption", els.captionInput.value));
 els.bubbleInput.addEventListener("input", () => setState("bubble", els.bubbleInput.value));
@@ -133,9 +152,12 @@ els.randomizeButton.addEventListener("click", () => {
   const current = pick(styles);
   state.selectedStyle = current.id;
   state.selectedShape = pick(shapes).id;
+  state.aiPreset = pick(aiPresets).id;
   state.characterId = pick(Object.keys(chars));
   state.accent = current.bg[1];
   state.rotation = rand(-12, 12);
+  state.aiStrength = rand(38, 96);
+  state.glow = rand(12, 60);
   state.bubble = current.bubble ? pick(["wow", "help", "certified icon", "no thoughts", "main character"]) : "";
   state.title = pick(["Absolute Mood", "Certified Icon", "No Notes", "Snack Boss", "Sky Wanderer", "Tea Powered"]);
   state.caption = pick(["This one actually sells", "Built for sticker packs and socials", "Exported straight from the browser", "Real-time edits, no backend drama", "Soft storybook vibes included"]);
@@ -244,6 +266,16 @@ function renderCatalog() {
 }
 
 function renderControls() {
+  els.aiPresetPicker.innerHTML = "";
+  for (const item of aiPresets) {
+    const button = chip(item.label, item.id === state.aiPreset, () => {
+      state.aiPreset = item.id;
+      renderControls();
+      changed();
+    });
+    els.aiPresetPicker.append(button);
+  }
+
   els.stylePicker.innerHTML = "";
   for (const item of styles) {
     const button = chip(item.label, item.id === state.selectedStyle, () => {
@@ -269,9 +301,13 @@ function renderControls() {
   els.captionInput.value = state.caption;
   els.bubbleInput.value = state.bubble;
   els.accentInput.value = state.accent;
+  els.aiStrengthInput.value = String(state.aiStrength);
+  els.glowInput.value = String(state.glow);
   els.outlineInput.value = String(state.outline);
   els.rotationInput.value = String(state.rotation);
   els.previewName.textContent = state.title || "Sticker preview";
+  els.aiModeLabel.textContent = `AI mode: ${findAiPreset(state.aiPreset).label}`;
+  els.photoStatusLabel.textContent = state.photoDataUrl ? "Using uploaded portrait" : "Using built-in orbit character";
 }
 
 function renderInventory() {
@@ -359,6 +395,9 @@ function config() {
   return {
     selectedStyle: state.selectedStyle,
     selectedShape: state.selectedShape,
+    aiPreset: state.aiPreset,
+    aiStrength: Number(state.aiStrength),
+    glow: Number(state.glow),
     title: state.title,
     caption: state.caption,
     bubble: state.bubble,
@@ -373,6 +412,9 @@ function config() {
 function applyStarter(starter) {
   state.selectedStyle = starter.style;
   state.selectedShape = starter.shape;
+  state.aiPreset = aiPresets[0].id;
+  state.aiStrength = 72;
+  state.glow = 28;
   state.title = starter.title;
   state.caption = starter.caption;
   state.bubble = starter.bubble;
@@ -413,6 +455,7 @@ function drawSticker(targetCtx, sticker, width, height, sourceImage = null) {
   targetCtx.stroke();
 
   drawDecor(targetCtx, currentStyle, sticker, width, height);
+  drawAura(targetCtx, sticker, currentStyle, width, height);
 
   if (sourceImage) {
     drawUploadedPhoto(targetCtx, currentStyle, cardX, cardY, cardW, cardH, sourceImage);
@@ -425,6 +468,22 @@ function drawSticker(targetCtx, sticker, width, height, sourceImage = null) {
   }
 
   drawText(targetCtx, sticker, width, height);
+  targetCtx.restore();
+}
+
+function drawAura(targetCtx, sticker, currentStyle, width, height) {
+  const glowPower = Number(sticker.glow || 0) / 100;
+  if (!glowPower) return;
+
+  const gradient = targetCtx.createRadialGradient(width / 2, height / 2, 60, width / 2, height / 2, 320);
+  gradient.addColorStop(0, rgba(currentStyle.bg[1], 0.28 * glowPower));
+  gradient.addColorStop(0.55, rgba(sticker.accent || currentStyle.bg[0], 0.2 * glowPower));
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  targetCtx.save();
+  targetCtx.fillStyle = gradient;
+  targetCtx.beginPath();
+  targetCtx.arc(width / 2, height / 2, 320, 0, Math.PI * 2);
+  targetCtx.fill();
   targetCtx.restore();
 }
 
@@ -475,13 +534,23 @@ function drawUploadedPhoto(targetCtx, currentStyle, cardX, cardY, cardW, cardH, 
   const photoH = cardH * 0.5;
   const x = cardX + (cardW - photoW) / 2;
   const y = cardY + 140;
+  const processed = buildAiStickerImage(sourceImage, findAiPreset(state.aiPreset), Number(state.aiStrength), Number(state.glow), currentStyle);
 
   targetCtx.save();
-  targetCtx.filter = currentStyle.filter;
+  targetCtx.shadowColor = rgba(state.accent || currentStyle.bg[1], 0.38);
+  targetCtx.shadowBlur = 24 + Number(state.glow) * 0.45;
   targetCtx.beginPath();
   shapePath(targetCtx, "rounded", x, y, photoW, photoH, 56);
   targetCtx.clip();
-  targetCtx.drawImage(sourceImage, x, y, photoW, photoH);
+  targetCtx.drawImage(processed, x, y, photoW, photoH);
+  targetCtx.restore();
+
+  targetCtx.save();
+  targetCtx.strokeStyle = rgba(state.accent || currentStyle.bg[1], 0.45);
+  targetCtx.lineWidth = 8;
+  targetCtx.beginPath();
+  shapePath(targetCtx, "rounded", x, y, photoW, photoH, 56);
+  targetCtx.stroke();
   targetCtx.restore();
 }
 
@@ -625,6 +694,9 @@ function renderPreview(starter) {
   drawSticker(previewCtx, {
     selectedStyle: starter.style,
     selectedShape: starter.shape,
+    aiPreset: aiPresets[0].id,
+    aiStrength: 72,
+    glow: 28,
     title: starter.title,
     caption: starter.caption,
     bubble: starter.bubble,
@@ -694,6 +766,10 @@ function findStyle(id) {
 
 function findShape(id) {
   return shapes.find((item) => item.id === id) || shapes[0];
+}
+
+function findAiPreset(id) {
+  return aiPresets.find((item) => item.id === id) || aiPresets[0];
 }
 
 function toast(message) {
@@ -781,4 +857,121 @@ function drawCloud(targetCtx, x, y, size) {
   targetCtx.arc(x, y - size * 0.1, size * 0.28, 0, Math.PI * 2);
   targetCtx.arc(x + size * 0.3, y, size * 0.2, 0, Math.PI * 2);
   targetCtx.fill();
+}
+
+function buildAiStickerImage(sourceImage, preset, strength, glow, currentStyle) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 520;
+  canvas.height = 520;
+  const localCtx = canvas.getContext("2d", { willReadFrequently: true });
+  localCtx.fillStyle = "#fff";
+  localCtx.fillRect(0, 0, canvas.width, canvas.height);
+  localCtx.filter = currentStyle.filter;
+
+  const crop = coverRect(sourceImage.width, sourceImage.height, canvas.width, canvas.height);
+  localCtx.drawImage(sourceImage, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, canvas.width, canvas.height);
+
+  const imageData = localCtx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const power = strength / 100;
+  const glowPower = glow / 100;
+  const levels = Math.max(3, preset.posterize);
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const avg = (r + g + b) / 3;
+    const edgeBoost = avg < 104 ? preset.edge * 24 * power : 0;
+
+    let nr = mix(r, preset.tint[0], 0.1 + power * 0.22);
+    let ng = mix(g, preset.tint[1], 0.08 + power * 0.18);
+    let nb = mix(b, preset.tint[2], 0.08 + power * 0.18);
+
+    nr = adjustContrast(nr + edgeBoost, preset.contrast);
+    ng = adjustContrast(ng + edgeBoost, preset.contrast);
+    nb = adjustContrast(nb + edgeBoost, preset.contrast);
+
+    [nr, ng, nb] = saturate(nr, ng, nb, preset.sat + power * 0.15);
+    nr = posterize(nr, levels);
+    ng = posterize(ng, levels);
+    nb = posterize(nb, levels);
+
+    if (avg > 210) {
+      nr = mix(nr, 255, 0.25 * glowPower);
+      ng = mix(ng, 255, 0.25 * glowPower);
+      nb = mix(nb, 255, 0.25 * glowPower);
+    }
+
+    data[i] = clamp(nr);
+    data[i + 1] = clamp(ng);
+    data[i + 2] = clamp(nb);
+  }
+
+  localCtx.putImageData(imageData, 0, 0);
+
+  localCtx.save();
+  localCtx.globalCompositeOperation = "screen";
+  localCtx.fillStyle = rgba(preset.glow, 0.08 + glowPower * 0.15);
+  localCtx.fillRect(0, 0, canvas.width, canvas.height);
+  localCtx.restore();
+
+  localCtx.save();
+  localCtx.globalAlpha = 0.12 + power * 0.18;
+  for (let i = 0; i < 1800; i += 1) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const size = Math.random() * 1.6;
+    localCtx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.24)" : "rgba(10,16,32,0.12)";
+    localCtx.fillRect(x, y, size, size);
+  }
+  localCtx.restore();
+
+  return canvas;
+}
+
+function coverRect(srcW, srcH, destW, destH) {
+  const srcRatio = srcW / srcH;
+  const destRatio = destW / destH;
+  if (srcRatio > destRatio) {
+    const sw = srcH * destRatio;
+    return { sx: (srcW - sw) / 2, sy: 0, sw, sh: srcH };
+  }
+  const sh = srcW / destRatio;
+  return { sx: 0, sy: (srcH - sh) / 2, sw: srcW, sh };
+}
+
+function mix(a, b, amount) {
+  return a + (b - a) * amount;
+}
+
+function adjustContrast(value, contrast) {
+  return (value - 128) * contrast + 128;
+}
+
+function posterize(value, levels) {
+  return Math.round((levels * value) / 255) * (255 / levels);
+}
+
+function saturate(r, g, b, amount) {
+  const avg = (r + g + b) / 3;
+  return [
+    avg + (r - avg) * amount,
+    avg + (g - avg) * amount,
+    avg + (b - avg) * amount
+  ];
+}
+
+function clamp(value) {
+  return Math.max(0, Math.min(255, value));
+}
+
+function rgba(rgb, alpha) {
+  if (Array.isArray(rgb)) return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
+  const hex = rgb.replace("#", "");
+  const value = hex.length === 3
+    ? hex.split("").map((item) => item + item).join("")
+    : hex;
+  const int = Number.parseInt(value, 16);
+  return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
 }

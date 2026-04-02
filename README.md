@@ -1,4 +1,4 @@
-# Sticker Forge
+# Sticker Orbit
 
 Static sticker website with:
 
