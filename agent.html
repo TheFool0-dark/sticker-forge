@@ -48,7 +48,7 @@
           </div>
           <label class="agent-label" for="agentApiKey">OpenAI API key</label>
           <input id="agentApiKey" class="agent-input" type="password" placeholder="sk-..." />
-          <p class="helper-text">Leave this blank to use the value in `openai-config.js`. In a public site, do not expose a real API key in frontend code.</p>
+          <p class="helper-text">Best mode: deploy on Vercel and set `OPENAI_API_KEY` on the server. Browser key entry is only for owner testing.</p>
 
           <label class="agent-label" for="agentModel">Model</label>
           <input id="agentModel" class="agent-input" type="text" value="gpt-5-mini" />
@@ -82,7 +82,7 @@
             <textarea id="agentPrompt" class="agent-textarea" rows="4" placeholder="Ask the agent to write sticker captions, analyze your uploaded photo, or build a sticker pack plan..."></textarea>
             <div class="action-row">
               <button id="sendAgentPrompt" class="btn btn-primary" type="submit">Send to agent</button>
-              <span id="agentStatus" class="helper-text">Idle</span>
+              <span id="agentStatus" class="helper-text">Ready</span>
             </div>
           </form>
         </article>

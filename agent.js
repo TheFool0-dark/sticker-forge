@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedKey = sessionStorage.getItem(AGENT_STORAGE_KEY) || "";
   els.apiKey.value = savedKey;
   els.model.value = config.model || "gpt-5-mini";
+  setStatus(els.status, config.preferProxy ? "Ready for proxy or browser key" : "Ready");
 
   els.quickPrompts.forEach((button) => {
     button.addEventListener("click", () => {
@@ -39,13 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!prompt) return;
 
     const apiKey = (els.apiKey.value || config.apiKey || "").trim();
-    if (!apiKey) {
-      appendMessage(els.messages, "assistant", "Add an OpenAI API key to use the live agent. For a public site, you should move this call behind your own backend.");
-      setStatus(els.status, "Missing API key");
-      return;
+    if (apiKey) {
+      sessionStorage.setItem(AGENT_STORAGE_KEY, apiKey);
     }
-
-    sessionStorage.setItem(AGENT_STORAGE_KEY, apiKey);
     appendMessage(els.messages, "user", prompt);
     els.prompt.value = "";
     setStatus(els.status, "Thinking...");
@@ -53,6 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const imageDataUrl = await maybeReadImageFile(els.photo.files?.[0]);
       const answer = await runStickerAgent({
+        apiEndpoint: config.apiEndpoint || "/api/agent",
+        preferProxy: Boolean(config.preferProxy),
         apiKey,
         model: (els.model.value || config.model || "gpt-5-mini").trim(),
         reasoningEffort: config.reasoningEffort || "low",
@@ -68,7 +67,49 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-async function runStickerAgent({ apiKey, model, reasoningEffort, prompt, imageDataUrl }) {
+async function runStickerAgent({ apiEndpoint, preferProxy, apiKey, model, reasoningEffort, prompt, imageDataUrl }) {
+  if (preferProxy) {
+    const proxyResult = await tryProxyRequest({ apiEndpoint, model, reasoningEffort, prompt, imageDataUrl });
+    if (proxyResult.ok) return proxyResult.text;
+    if (!apiKey) {
+      throw new Error(`${proxyResult.error} Add a browser API key for testing, or deploy with a server-side OPENAI_API_KEY.`);
+    }
+  }
+
+  if (!apiKey) {
+    throw new Error("Missing API key.");
+  }
+
+  return runDirectRequest({ apiKey, model, reasoningEffort, prompt, imageDataUrl });
+}
+
+async function tryProxyRequest({ apiEndpoint, model, reasoningEffort, prompt, imageDataUrl }) {
+  try {
+    const response = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        reasoningEffort,
+        prompt,
+        imageDataUrl
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return { ok: false, error: data.error || `Proxy failed with ${response.status}.` };
+    }
+
+    return { ok: true, text: data.output_text || "The agent returned no text output." };
+  } catch {
+    return { ok: false, error: "Proxy endpoint unavailable." };
+  }
+}
+
+async function runDirectRequest({ apiKey, model, reasoningEffort, prompt, imageDataUrl }) {
   const userContent = [{ type: "input_text", text: prompt }];
   if (imageDataUrl) {
     userContent.push({ type: "input_image", image_url: imageDataUrl });

@@ -25,6 +25,11 @@ You can host this for free on:
 - Netlify
 - Vercel
 
+Best recommendation:
+
+- GitHub Pages for the static-only version
+- Vercel for the public AI-agent version because the OpenAI key can live on the server
+
 ## Deploy
 
 This project is a plain static site. Deploy the contents of `D:\sticker` directly.
@@ -71,16 +76,23 @@ After that, sign up and sign in will use Supabase instead of browser-only storag
 
 The AI agent page is separated at `agent.html`.
 
-To enable live OpenAI responses:
+To enable safe public AI responses on Vercel:
+
+1. Deploy the project to Vercel.
+2. Add an environment variable named `OPENAI_API_KEY`.
+3. Keep `window.STICKER_ORBIT_OPENAI.preferProxy = true` in `openai-config.js`.
+4. The agent page will call the server-side endpoint at `/api/agent`.
+
+To enable owner-only browser testing:
 
 1. Open `D:\sticker\openai-config.js`.
 2. Add your OpenAI API key and preferred model, or paste a key into the agent page at runtime.
-3. Deploy again if you want the config file values to apply publicly.
+3. Use this only for private testing.
 
 Important:
 
 - A frontend-only site should not expose a permanent production API key to all visitors.
-- For public multi-user AI access, move the OpenAI call behind your own backend or serverless function.
+- This repo already includes a Vercel-style serverless proxy at `D:\sticker\api\agent.js`.
 
 ## Notes
 
