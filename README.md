@@ -7,10 +7,10 @@ Static sticker website with:
 - sticker type catalog
 - built-in live sticker inventory
 - custom photo upload
-- Supabase-ready auth with local fallback
+- Supabase-ready auth with a demo-only local fallback
 - funny, cute, comic, retro, and neon sticker presets
 - AI-style photo sticker transforms
-- OpenAI Responses API-ready AI agent
+- OpenAI Responses API-ready AI agent with offline fallback on static hosting
 - real-time editable starter stickers
 - browser-based sticker rendering on canvas
 - gallery save/load
@@ -27,7 +27,7 @@ You can host this for free on:
 
 Best recommendation:
 
-- GitHub Pages for the static-only version
+- GitHub Pages for the static-only version with offline agent mode
 - Vercel for the public AI-agent version because the OpenAI key can live on the server
 
 ## Deploy
@@ -56,7 +56,7 @@ Vercel:
 
 This site supports two auth modes:
 
-- local browser account fallback
+- local browser account fallback for demo use
 - Supabase cloud auth when configured
 
 To enable real cloud accounts:
@@ -72,6 +72,11 @@ To enable real cloud accounts:
 
 After that, sign up and sign in will use Supabase instead of browser-only storage.
 
+Important:
+
+- The local browser account mode is only for demo use on a static deployment.
+- Do not treat browser-local accounts as production authentication.
+
 ## AI Agent Setup
 
 The AI agent page is separated at `agent.html`.
@@ -81,6 +86,11 @@ Without any API key:
 - the page runs in offline creative mode
 - it still gives sticker captions, pack ideas, and prompt-based guidance
 - no setup is required
+
+On GitHub Pages specifically:
+
+- `/api/agent` is not available
+- the agent will stay in offline creative mode unless you deploy to a server platform
 
 To enable safe public AI responses on Vercel:
 

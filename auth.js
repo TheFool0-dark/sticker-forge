@@ -166,7 +166,7 @@ function setupAuthPage() {
 
   els.providerHint.textContent = authState.provider.kind === "supabase"
     ? "Auth mode: Supabase cloud account"
-    : "Auth mode: local browser account";
+    : "Auth mode: local browser account (demo only)";
 
   authState.provider.getSession().then((session) => {
     if (session) {
@@ -311,7 +311,7 @@ async function syncSiteAuthUi() {
 
     const studio = document.createElement("a");
     studio.className = "btn btn-primary btn-small";
-    studio.href = "#builder";
+    studio.href = "./studio.html";
     studio.textContent = "Launch studio";
 
     navActions.append(tag, logout, studio);
@@ -325,7 +325,7 @@ async function syncSiteAuthUi() {
 
   const studio = document.createElement("a");
   studio.className = "btn btn-primary btn-small";
-  studio.href = "#builder";
+  studio.href = "./studio.html";
   studio.textContent = "Launch studio";
 
   navActions.append(login, studio);
